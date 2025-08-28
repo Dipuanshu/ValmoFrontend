@@ -71,11 +71,18 @@ const MultiLogin = () => {
 
       // ✅ Agent Login (API)
       let endpoint = "https://valmobackend.onrender.com/Agentlogin";
-      let requestBody = {
-        email: formData.userId, // ✅ email ke form se login
-        password: formData.password,
-        userType: currentLoginType,
-      };
+      let requestBody =
+        currentLoginType === "agent"
+          ? {
+              agentId: formData.userId, // ✅ use agentId instead of email
+              password: formData.password,
+              userType: currentLoginType,
+            }
+          : {
+              email: formData.userId, // for other types if added later
+              password: formData.password,
+              userType: currentLoginType,
+            };
 
       const res = await fetch(endpoint, {
         method: "POST",
@@ -135,7 +142,7 @@ const MultiLogin = () => {
       case "admin":
         return "Email";
       case "agent":
-        return "Email"; // ✅ Updated: agent login with email
+        return "Agent ID"; // ✅ changed for agent
       default:
         return "User ID";
     }
@@ -146,7 +153,7 @@ const MultiLogin = () => {
       case "admin":
         return "Enter your Email";
       case "agent":
-        return "Enter your Email"; // ✅ Updated: no Unique ID
+        return "Enter your Agent ID"; // ✅ changed for agent
       default:
         return "Enter your User ID";
     }
@@ -183,17 +190,17 @@ const MultiLogin = () => {
 
                 <button
                   onClick={() => showLoginForm("admin")}
-                  className="w-full bg-green-600 text-white py-2 sm:py-3 rounded hover:bg-green-700 transition flex items-center justify-center space-x-2 text-sm sm:text-base"
+                  className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 sm:py-4 rounded-lg transition flex items-center justify-center space-x-2 text-base sm:text-lg shadow-md"
                 >
-                  <i className="fas fa-user-shield"></i>
+                  <i className="fas fa-user-shield text-lg"></i>
                   <span>Admin Login</span>
                 </button>
 
                 <button
                   onClick={() => showLoginForm("agent")}
-                  className="w-full bg-purple-600 text-white py-2 sm:py-3 rounded hover:bg-purple-700 transition flex items-center justify-center space-x-2 text-sm sm:text-base"
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 sm:py-4 rounded-lg transition flex items-center justify-center space-x-2 text-base sm:text-lg shadow-md"
                 >
-                  <i className="fas fa-user-tie"></i>
+                  <i className="fas fa-user-tie text-lg"></i>
                   <span>Agent Login</span>
                 </button>
               </div>
@@ -233,7 +240,10 @@ const MultiLogin = () => {
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
-                    <label htmlFor="userId" className="block mb-1 font-medium text-sm">
+                    <label
+                      htmlFor="userId"
+                      className="block mb-1 font-medium text-sm"
+                    >
                       {getUserIdLabel()}
                     </label>
                     <input
@@ -267,17 +277,37 @@ const MultiLogin = () => {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full bg-black text-white py-3 rounded hover:bg-gray-800 transition text-base font-medium"
+                    className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition text-base font-medium shadow-md"
                   >
                     {isLoading ? (
                       <>
-                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        <svg
+                          className="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 
+                            5.291A7.962 7.962 0 014 12H0c0 
+                            3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
                         </svg>
                         Logging in...
                       </>
-                    ) : "Login"}
+                    ) : (
+                      "Login"
+                    )}
                   </button>
                 </form>
               </div>
@@ -293,7 +323,9 @@ const MultiLogin = () => {
             <div className="text-center md:text-left">
               <div className="flex items-center justify-center md:justify-start space-x-2 mb-2">
                 <i className="fas fa-envelope text-blue-400 text-xs sm:text-sm"></i>
-                <span className="text-xs sm:text-sm">support@valmodeliver.in</span>
+                <span className="text-xs sm:text-sm">
+                  support@valmodeliver.in
+                </span>
               </div>
               <p className="text-xs">© 2025 Valmo. All rights reserved.</p>
             </div>

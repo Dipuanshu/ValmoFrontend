@@ -492,7 +492,9 @@ const AgentDashboard = () => {
                 alt="VALMO"
                 className="h-6 sm:h-8 filter invert"
               />
-              <h1 className="text-xl sm:text-2xl font-bold text-gray-800">VALMO Agent</h1>
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
+                VALMO Agent
+              </h1>
             </div>
             <div className="flex items-center space-x-4">
               <span className="text-gray-600 text-sm">
@@ -541,12 +543,16 @@ const AgentDashboard = () => {
             {loading ? (
               <div className="text-center py-6 sm:py-8">
                 <i className="fas fa-spinner fa-spin text-xl sm:text-2xl text-gray-400 mb-3 sm:mb-4"></i>
-                <p className="text-gray-600 text-sm sm:text-base">Loading applications...</p>
+                <p className="text-gray-600 text-sm sm:text-base">
+                  Loading applications...
+                </p>
               </div>
             ) : filteredApplications.length === 0 ? (
               <div className="text-center py-6 sm:py-8">
                 <i className="fas fa-inbox text-3xl sm:text-4xl text-gray-400 mb-3 sm:mb-4"></i>
-                <p className="text-gray-600 text-sm sm:text-base">No applications found</p>
+                <p className="text-gray-600 text-sm sm:text-base">
+                  No applications found
+                </p>
               </div>
             ) : (
               <div className="overflow-x-auto">

@@ -924,34 +924,6 @@ const Form = () => {
         </div>
       )}
 
-      {/* Header */}
-      <header className="bg-indigo-700 text-white py-6 shadow-lg">
-        <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center">
-          <div className="flex items-center space-x-3 mb-4 md:mb-0">
-            <img
-              src="https://www.valmo.in/static-assets/valmo-web/valmo-logo-white.svg"
-              alt="VALMO"
-              className="h-8"
-            />
-            <h1 className="text-2xl font-bold">VALMO Logistics</h1>
-          </div>
-          <div className="text-center md:text-right">
-            <div className="text-sm">
-              Application No:{" "}
-              <span className="font-mono">{applicationNumber}</span>
-            </div>
-            {agentInfo && (
-              <div className="text-xs mt-1">
-                <p>
-                  Referred by: <strong>{agentInfo.agentName}</strong>
-                </p>
-                <p>Agent ID: {agentInfo.agentId}</p>
-              </div>
-            )}
-          </div>
-        </div>
-      </header>
-
       <main className="container mx-auto px-4 py-8">
         <div className="form-container max-w-4xl mx-auto overflow-hidden">
           {/* Company Header */}
@@ -3159,32 +3131,6 @@ const Form = () => {
           </form>
         </div>
       </main>
-
-      <footer className="bg-gray-900 text-gray-300 py-6">
-        <div className="container mx-auto px-4 max-w-6xl">
-          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <div className="text-center md:text-left">
-              <div className="flex items-center justify-center md:justify-start space-x-2 mb-2">
-                <i className="fas fa-envelope text-blue-400"></i>
-                <span className="text-sm">support@valmodeliver.in</span>
-              </div>
-              <p className="text-xs">© 2025 Valmo. All rights reserved.</p>
-              <p className="text-xs text-gray-500 mt-1">
-                Application Number:{" "}
-                <span className="font-mono">{applicationNumber}</span>
-              </p>
-            </div>
-            <div className="flex space-x-6 text-sm">
-              <a href="/privacy" className="hover:text-white transition-colors">
-                Privacy Policy
-              </a>
-              <a href="/terms" className="hover:text-white transition-colors">
-                Terms of Use
-              </a>
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 };
