@@ -32,16 +32,16 @@ const CustomerLogin = () => {
     const { userId, password } = formData;
 
     if (!userId || !password) {
-      showMessage("Please enter both email and password", "error");
+      showMessage("Please enter both customer ID and password", "error");
       return;
     }
 
     setIsLoading(true);
 
     try {
-      // Backend URL
+      // Updated: Now using customerId in API call instead of email
       const response = await fetch(
-        `https://valmobackend.onrender.com/customer/credentials?email=${userId}`
+        `https://valmobackend.onrender.com/customer/credentials?customerId=${userId}`
       );
       const data = await response.json();
 
@@ -56,13 +56,12 @@ const CustomerLogin = () => {
           localStorage.setItem(
             "customerSession",
             JSON.stringify({
-              customerId: data.customerId,
-              email: userId,
+              customerId: userId, // Updated: Storing userId as customerId
               loginTime: new Date().toISOString(),
             })
           );
 
-          // Redirect to customer dashboard with ID
+          // Redirect to customer dashboard
           setTimeout(() => navigate(`/customer-dashboard/${userId}`), 500);
         } else {
           showMessage("Incorrect password", "error");
@@ -116,8 +115,12 @@ const CustomerLogin = () => {
                   className="h-6 sm:h-8"
                 />
               </div>
-              <p className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-2">Welcome back !!</p>
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Sign In</h2>
+              <p className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-2">
+                Welcome back !!
+              </p>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+                Sign In
+              </h2>
             </div>
 
             {message.text && (
@@ -138,7 +141,7 @@ const CustomerLogin = () => {
                   htmlFor="userId"
                   className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2"
                 >
-                  Email
+                  Customer ID
                 </label>
                 <input
                   type="text"
@@ -152,7 +155,7 @@ const CustomerLogin = () => {
                     border: "1px solid #d1fae5",
                     backgroundColor: "#f0fdf4",
                   }}
-                  placeholder="Enter your email"
+                  placeholder="Enter your customer ID"
                 />
               </div>
 
@@ -189,13 +192,31 @@ const CustomerLogin = () => {
               >
                 {isLoading ? (
                   <>
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    <svg
+                      className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
                     </svg>
                     Signing In...
                   </>
-                ) : "Sign In"}
+                ) : (
+                  "Sign In"
+                )}
               </button>
             </form>
 

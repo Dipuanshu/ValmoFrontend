@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
+const API_BASE = "https://valmobackend.onrender.com";
+
 const AgentApplications = () => {
   const navigate = useNavigate();
   const [applications, setApplications] = useState([]);
@@ -14,8 +16,20 @@ const AgentApplications = () => {
   const [isBankModalOpen, setIsBankModalOpen] = useState(false);
   const [selectedApplication, setSelectedApplication] = useState(null);
   const [availableBanks, setAvailableBanks] = useState([]);
+  console.log("Avliable", availableBanks);
   const [selectedBanks, setSelectedBanks] = useState([]);
   const [loadingBanks, setLoadingBanks] = useState(false);
+  // Edit application state
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingApplication, setEditingApplication] = useState(null);
+  const [editFormData, setEditFormData] = useState({
+    name: "",
+    phoneNumber: "",
+    email: "",
+    pincode: "",
+  });
+  const [editLocation, setEditLocation] = useState("");
+  const [editSelectedLocations, setEditSelectedLocations] = useState([]);
 
   // Check if user is agent
   useEffect(() => {
@@ -44,6 +58,84 @@ const AgentApplications = () => {
     }
   };
 
+  const callApi = async (url, payload) => {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || data?.success === false) {
+      const msg = data?.message || "Request failed";
+      throw new Error(msg);
+    }
+    return data;
+  };
+
+  const optimisticUpdate = (email, name, patch) => {
+    setApplications((prev) =>
+      prev.map((app) =>
+        app.email === email && app.name === name ? { ...app, ...patch } : app
+      )
+    );
+    setFilteredApplications((prev) =>
+      prev.map((app) =>
+        app.email === email && app.name === name ? { ...app, ...patch } : app
+      )
+    );
+  };
+
+  const handleApprove = async (appObj) => {
+    optimisticUpdate(appObj.email, appObj.name, {
+      approved: true,
+      rejected: false,
+    });
+    try {
+      await callApi(`${API_BASE}/application/approve`, {
+        email: appObj.email,
+        name: appObj.name,
+      });
+      fetchApplications();
+      alert("Approval mail sent ✅");
+    } catch (err) {
+      optimisticUpdate(appObj.email, appObj.name, { approved: false });
+      alert("Approve failed: " + err.message);
+    }
+  };
+
+  const handleReject = async (appObj) => {
+    optimisticUpdate(appObj.email, appObj.name, {
+      rejected: true,
+      approved: false,
+    });
+    try {
+      await callApi(`${API_BASE}/application/one-time-fee`, {
+        email: appObj.email,
+        name: appObj.name,
+      });
+      fetchApplications();
+      alert("Rejected successfully ✅");
+    } catch (err) {
+      optimisticUpdate(appObj.email, appObj.name, { rejected: false });
+      alert("Reject failed: " + err.message);
+    }
+  };
+
+  const handleAgreement = async (appObj) => {
+    optimisticUpdate(appObj.email, appObj.name, { agreementSent: true });
+    try {
+      await callApi(`${API_BASE}/application/agreement`, {
+        email: appObj.email,
+        name: appObj.name,
+      });
+      fetchApplications();
+      alert("Agreement mail sent ✅");
+    } catch (err) {
+      optimisticUpdate(appObj.email, appObj.name, { agreementSent: false });
+      alert("Agreement failed: " + err.message);
+    }
+  };
+
   // Search and filter applications
   useEffect(() => {
     if (searchTerm.trim() === "") {
@@ -68,22 +160,70 @@ const AgentApplications = () => {
 
   // Edit Application
   const handleEditApplication = (application) => {
-    // For now, we'll just show an alert - you can implement edit modal later
-    alert("Edit functionality would open here");
+    setEditingApplication(application);
+    setEditFormData({
+      name: application.fullName || "",
+      phoneNumber: application.mobileNumber || "",
+      email: application.email || "",
+      pincode: application.residentialPinCode || "",
+    });
+    if (application.residentialPinCode)
+      fetchEditLocation(application.residentialPinCode);
+    else setEditLocation("");
+    setEditSelectedLocations([]);
+    setIsEditModalOpen(true);
   };
 
-  const handleDelete = async (applicationId) => {
-    if (!window.confirm("Are you sure you want to delete this application?"))
-      return;
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
     try {
-      await axios.delete(
-        `https://valmobackend.onrender.com/application/${applicationId}`
+      const locationToSend =
+        editSelectedLocations.length > 0
+          ? editSelectedLocations.join(" | ")
+          : editLocation;
+      const formDataToSend = {
+        ...editFormData,
+        location: locationToSend,
+        residentialPinCode: editFormData.pincode,
+      };
+
+      // Remove the pincode field since we're using residentialPinCode
+      delete formDataToSend.pincode;
+
+      const response = await fetch(
+        `${API_BASE}/application/${editingApplication._id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formDataToSend),
+        }
       );
-      alert("Application deleted successfully ✅");
-      fetchApplications(); // Refresh the list
-    } catch (error) {
-      console.error("Error deleting application:", error);
-      alert("Failed to delete application ❌");
+      const result = await response.json();
+      if (response.ok && result.success) {
+        alert("Application updated successfully!");
+        const updatedApplications = applications.map((app) =>
+          app._id === editingApplication._id
+            ? {
+                ...app,
+                ...formDataToSend,
+                fullName: editFormData.name,
+                mobileNumber: editFormData.phoneNumber,
+              }
+            : app
+        );
+        setApplications(updatedApplications);
+        setFilteredApplications(updatedApplications);
+        setIsEditModalOpen(false);
+        setEditingApplication(null);
+      } else {
+        alert(
+          "Failed to update application: " +
+            (result?.message || "Unknown error")
+        );
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error updating application: " + err.message);
     }
   };
 
@@ -94,15 +234,7 @@ const AgentApplications = () => {
       const response = await axios.get(
         "https://valmobackend.onrender.com/bankDetails"
       );
-
-      const bankData = response.data.data;
-
-      if (bankData) {
-        // Wrap the single bank object inside an array
-        setAvailableBanks([bankData]);
-      } else {
-        setAvailableBanks([]);
-      }
+      setAvailableBanks(response.data.data || []);
     } catch (error) {
       console.error("Error loading bank details:", error);
       alert("Failed to load bank details ❌");
@@ -136,7 +268,7 @@ const AgentApplications = () => {
     }
 
     try {
-      // For each selected bank, send assignment to back
+      // For each selected bank, send assignment to backend
       const promises = selectedBanks.map((bankId) => {
         const bank = availableBanks.find((b) => b._id === bankId);
         return axios.post(
@@ -159,45 +291,35 @@ const AgentApplications = () => {
     }
   };
 
-  // Copy proposal function
-  const handleCopyProposal = async (application) => {
+  // Edit helper functions
+  const fetchEditLocation = async (pincode) => {
     try {
-      // Call the same API as used in create proposal
-      const response = await axios.post(
-        "https://valmobackend.onrender.com/sendProposal",
-        {
-          email: application.email,
-          name: application.fullName,
-        }
+      const response = await fetch(
+        `https://api.postalpincode.in/pincode/${pincode}`
       );
-
-      if (response.data.success) {
-        // Copy to clipboard
-        const proposalText = `Dear ${application.fullName},
-
-Your application has been approved. Please find the payment details below:
-Bank: ${response.data.bankDetails.bankName}
-Account Number: ${response.data.bankDetails.accountNumber}
-IFSC Code: ${response.data.bankDetails.ifscCode}
-Branch: ${response.data.bankDetails.branchName}
-
-For UPI payments:
-UPI ID: ${response.data.bankDetails.upiId || "N/A"}
-
-Or scan the QR code attached to make the payment.
-
-Thank you for choosing Valmo!`;
-
-        await navigator.clipboard.writeText(proposalText);
-        alert("Proposal copied to clipboard! ✅");
-      } else {
-        alert("Failed to generate proposal ❌");
+      const data = await response.json();
+      if (Array.isArray(data) && data[0]?.Status === "Success") {
+        const postOffices = data[0].PostOffice || [];
+        setEditLocation(postOffices.map((po) => po.Name).join(" | "));
       }
-    } catch (error) {
-      console.error("Error copying proposal:", error);
-      alert("Failed to copy proposal ❌");
+    } catch (err) {
+      console.error(err);
     }
   };
+
+  const toggleEditLocationSelection = (location) => {
+    setEditSelectedLocations((prev) =>
+      prev.includes(location)
+        ? prev.filter((l) => l !== location)
+        : [...prev, location]
+    );
+  };
+
+  const selectAllEditLocations = () => {
+    if (editLocation) setEditSelectedLocations(editLocation.split(" | "));
+  };
+
+  const deselectAllEditLocations = () => setEditSelectedLocations([]);
 
   // Logout Function
   const logout = () => {
@@ -341,40 +463,76 @@ Thank you for choosing Valmo!`;
                         <div className="flex items-center space-x-1">
                           <button
                             onClick={() =>
-                              handleViewApplication(application._id)
+                              handleViewApplication(application.email)
                             }
-                            title="View"
-                            className="text-blue-600 hover:text-blue-700 p-1"
+                            className="text-blue-600 hover:text-blue-900 bg-gray-100 hover:bg-gray-200 p-1.5 sm:p-2 rounded-full transition-all duration-200 shadow-sm hover:shadow-md"
+                            title="View Application"
                           >
-                            <i className="fas fa-eye"></i>
+                            <i className="fas fa-eye text-xs sm:text-sm"></i>
                           </button>
+
                           <button
                             onClick={() => handleEditApplication(application)}
-                            title="Edit"
-                            className="text-yellow-600 hover:text-yellow-700 p-1"
+                            className="text-yellow-600 hover:text-yellow-900 bg-gray-100 hover:bg-gray-200 p-1.5 sm:p-2 rounded-full transition-all duration-200 shadow-sm hover:shadow-md"
+                            title="Edit Application"
                           >
-                            <i className="fas fa-edit"></i>
+                            <i className="fas fa-edit text-xs sm:text-sm"></i>
                           </button>
-                          <button
-                            onClick={() => handleDelete(application._id)}
-                            title="Delete"
-                            className="text-red-600 hover:text-red-700 p-1"
-                          >
-                            <i className="fas fa-trash"></i>
-                          </button>
+
                           <button
                             onClick={() => handleBankSelection(application)}
-                            title="Assign Bank"
-                            className="text-green-600 hover:text-green-700 p-1"
+                            className="text-green-600 hover:text-green-900 bg-gray-100 hover:bg-gray-200 p-1.5 sm:p-2 rounded-full transition-all duration-200 shadow-sm hover:shadow-md"
+                            title="Select Bank"
                           >
-                            <i className="fas fa-university"></i>
+                            <i className="fas fa-university text-xs sm:text-sm"></i>
                           </button>
+
                           <button
-                            onClick={() => handleCopyProposal(application)}
-                            title="Copy Proposal"
-                            className="text-purple-600 hover:text-purple-700 p-1"
+                            onClick={() => handleApprove(application)}
+                            disabled={
+                              application.approved || application.rejected
+                            }
+                            className={`px-2 py-1 text-xs rounded font-medium shadow-sm transition-all duration-200 ${
+                              application.approved || application.rejected
+                                ? "bg-green-500 text-white cursor-not-allowed opacity-75"
+                                : "bg-gray-200 text-gray-700 hover:bg-green-500 hover:text-white hover:shadow-md"
+                            }`}
                           >
-                            <i className="fas fa-copy"></i>
+                            Approve
+                          </button>
+
+                          <button
+                            onClick={() => handleAgreement(application)}
+                            disabled={
+                              !application.approved ||
+                              application.rejected ||
+                              application.agreementSent
+                            }
+                            className={`px-2 py-1 text-xs rounded font-medium shadow-sm transition-all duration-200 ${
+                              application.agreementSent || application.rejected
+                                ? "bg-yellow-400 text-white cursor-not-allowed opacity-75"
+                                : !application.approved
+                                ? "bg-gray-200 text-gray-700 cursor-not-allowed opacity-75"
+                                : "bg-gray-200 text-gray-700 hover:bg-yellow-400 hover:text-white hover:shadow-md"
+                            }`}
+                          >
+                            Agreement
+                          </button>
+
+                          <button
+                            onClick={() => handleReject(application)}
+                            disabled={
+                              !application.agreementSent || application.rejected
+                            }
+                            className={`px-2 py-1 text-xs rounded font-medium shadow-sm transition-all duration-200 ${
+                              application.rejected
+                                ? "bg-red-500 text-white cursor-not-allowed opacity-75"
+                                : !application.agreementSent
+                                ? "bg-gray-200 text-gray-700 cursor-not-allowed opacity-75"
+                                : "bg-gray-200 text-gray-700 hover:bg-red-500 hover:text-white hover:shadow-md"
+                            }`}
+                          >
+                            One Time Fee
                           </button>
                         </div>
                       </td>
@@ -385,104 +543,271 @@ Thank you for choosing Valmo!`;
             )}
           </div>
         </div>
+      </div>
 
-        {/* Bank Selection Modal */}
-        {isBankModalOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-              <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Select Banks for {selectedApplication?.fullName}
-                </h3>
-                <button
-                  onClick={() => setIsBankModalOpen(false)}
-                  className="text-gray-400 hover:text-gray-500"
-                >
-                  <i className="fas fa-times"></i>
-                </button>
-              </div>
-              <div className="px-6 py-4 space-y-4">
-                {loadingBanks ? (
-                  <div className="text-center py-4">
-                    <i className="fas fa-spinner fa-spin text-xl text-blue-600 mb-2"></i>
-                    <p className="text-gray-600">Loading banks...</p>
+      {/* Bank Selection Modal */}
+      {isBankModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Select Banks for {selectedApplication?.fullName}
+              </h3>
+              <button
+                onClick={() => setIsBankModalOpen(false)}
+                className="text-gray-400 hover:text-gray-500"
+              >
+                <i className="fas fa-times"></i>
+              </button>
+            </div>
+            <div className="px-6 py-4 space-y-4">
+              {loadingBanks ? (
+                <div className="text-center py-4">
+                  <i className="fas fa-spinner fa-spin text-xl text-blue-600 mb-2"></i>
+                  <p className="text-gray-600">Loading banks...</p>
+                </div>
+              ) : availableBanks.length === 0 ? (
+                <div className="text-center py-4">
+                  <i className="fas fa-university text-2xl text-gray-400 mb-2"></i>
+                  <p className="text-gray-600">No banks available</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="border rounded-lg p-3">
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id="qr_code"
+                        checked={selectedBanks.includes("qr_code")}
+                        onChange={() => toggleBankSelection("qr_code")}
+                        className="h-4 w-4 text-blue-600 rounded"
+                      />
+                      <label
+                        htmlFor="qr_code"
+                        className="ml-2 text-sm font-medium text-gray-700"
+                      >
+                        QR Code Payment
+                      </label>
+                    </div>
                   </div>
-                ) : !availableBanks || availableBanks.length === 0 ? (
-                  <div className="text-center py-4">
-                    <i className="fas fa-university text-2xl text-gray-400 mb-2"></i>
-                    <p className="text-gray-600">No banks available</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    <div className="border rounded-lg p-3">
-                      <div className="flex items-center">
+
+                  {availableBanks.map((bank) => (
+                    <div key={bank._id} className="border rounded-lg p-3">
+                      <div className="flex items-start">
                         <input
                           type="checkbox"
-                          id="qr_code"
-                          checked={selectedBanks.includes("qr_code")}
-                          onChange={() => toggleBankSelection("qr_code")}
-                          className="h-4 w-4 text-blue-600 rounded"
+                          id={bank._id}
+                          checked={selectedBanks.includes(bank._id)}
+                          onChange={() => toggleBankSelection(bank._id)}
+                          className="h-4 w-4 text-blue-600 rounded mt-1"
                         />
-                        <label
-                          htmlFor="qr_code"
-                          className="ml-2 text-sm font-medium text-gray-700"
-                        >
-                          QR Code Payment
+                        <label htmlFor={bank._id} className="ml-2">
+                          <div className="font-medium text-sm">
+                            {bank.bankName}
+                          </div>
+                          <div className="text-xs text-gray-600 mt-1">
+                            <div>Account: {bank.accountNumber}</div>
+                            <div>IFSC: {bank.ifscCode}</div>
+                            <div>UPI: {bank.upiId || "N/A"}</div>
+                          </div>
                         </label>
                       </div>
                     </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+              <button
+                type="button"
+                onClick={() => setIsBankModalOpen(false)}
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleAssignBanks}
+                disabled={selectedBanks.length === 0 || loadingBanks}
+                className={`px-4 py-2 rounded-md font-medium text-white ${
+                  selectedBanks.length === 0 || loadingBanks
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-blue-600 hover:bg-blue-700"
+                }`}
+              >
+                Assign Selected
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
-                    {availableBanks.map((bank) => (
-                      <div key={bank._id} className="border rounded-lg p-3">
-                        <div className="flex items-start">
-                          <input
-                            type="checkbox"
-                            id={bank._id}
-                            checked={selectedBanks.includes(bank._id)}
-                            onChange={() => toggleBankSelection(bank._id)}
-                            className="h-4 w-4 text-blue-600 rounded mt-1"
-                          />
-                          <label htmlFor={bank._id} className="ml-2">
-                            <div className="font-medium text-sm">
-                              {bank.bankName}
-                            </div>
-                            <div className="text-xs text-gray-600 mt-1">
-                              <div>Account: {bank.accountNumber}</div>
-                              <div>IFSC: {bank.ifscCode}</div>
-                              <div>UPI: {bank.upiId || "N/A"}</div>
-                            </div>
-                          </label>
-                        </div>
+      {/* Edit Application Modal */}
+      {isEditModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+            <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Edit Application
+              </h3>
+              <button
+                onClick={() => setIsEditModalOpen(false)}
+                className="text-gray-400 hover:text-gray-500"
+              >
+                <i className="fas fa-times"></i>
+              </button>
+            </div>
+            <form onSubmit={handleEditSubmit}>
+              <div className="px-6 py-4 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Name
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={editFormData.name}
+                    onChange={(e) =>
+                      setEditFormData({ ...editFormData, name: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    name="phoneNumber"
+                    value={editFormData.phoneNumber}
+                    onChange={(e) =>
+                      setEditFormData({
+                        ...editFormData,
+                        phoneNumber: e.target.value,
+                      })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={editFormData.email}
+                    onChange={(e) =>
+                      setEditFormData({
+                        ...editFormData,
+                        email: e.target.value,
+                      })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Pincode
+                  </label>
+                  <input
+                    type="text"
+                    name="pincode"
+                    value={editFormData.pincode}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setEditFormData({ ...editFormData, pincode: value });
+                      if (value.length === 6) fetchEditLocation(value);
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+                {editLocation && (
+                  <div>
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Areas ({editLocation.split(" | ").length} total)
+                      </label>
+                      <div className="space-x-2">
+                        <button
+                          type="button"
+                          onClick={selectAllEditLocations}
+                          className="text-xs bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded"
+                        >
+                          Select All
+                        </button>
                       </div>
-                    ))}
+                    </div>
+                    <div className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 max-h-40 overflow-y-auto">
+                      <div className="grid grid-cols-2 gap-1">
+                        {editLocation.split(" | ").map((area, index) => (
+                          <div
+                            key={index}
+                            className={`py-1 text-sm cursor-pointer rounded px-2 ${
+                              editSelectedLocations.includes(area)
+                                ? "bg-blue-500 text-white"
+                                : "hover:bg-gray-200"
+                            }`}
+                            onClick={() => toggleEditLocationSelection(area)}
+                          >
+                            {area}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    {editSelectedLocations.length > 0 && (
+                      <div className="mt-2 text-sm text-gray-600">
+                        Selected: {editSelectedLocations.length} area(s)
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
               <div className="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
                 <button
                   type="button"
-                  onClick={() => setIsBankModalOpen(false)}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 font-medium"
+                  onClick={() => setIsEditModalOpen(false)}
+                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 font-medium transition-colors duration-200"
                 >
                   Cancel
                 </button>
                 <button
-                  type="button"
-                  onClick={handleAssignBanks}
-                  disabled={selectedBanks.length === 0 || loadingBanks}
-                  className={`px-4 py-2 rounded-md font-medium text-white ${
-                    selectedBanks.length === 0 || loadingBanks
-                      ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-blue-600 hover:bg-blue-700"
-                  }`}
+                  type="submit"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium transition-colors duration-200 shadow-sm hover:shadow-md"
                 >
-                  Assign Selected
+                  Save Changes
                 </button>
               </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* FOOTER */}
+      <footer className="bg-gray-900 text-gray-300 py-4 sm:py-6 mt-6 sm:mt-8">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <div className="flex flex-col md:flex-row justify-between items-center space-y-3 sm:space-y-4 md:space-y-0">
+            <div className="text-center md:text-left">
+              <p className="text-xs sm:text-sm">
+                © 2025 Valmo. All rights reserved.
+              </p>
+            </div>
+            <div className="flex space-x-4 sm:space-x-6 text-xs sm:text-sm">
+              <a href="/privacy" className="hover:text-white transition-colors">
+                Privacy Policy
+              </a>
+              <a href="/terms" className="hover:text-white transition-colors">
+                Terms of Use
+              </a>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      </footer>
     </>
   );
 };

@@ -164,18 +164,18 @@ const MultiLogin = () => {
   };
 
   return (
-    <div className="bg-gray-100 flex flex-col min-h-screen">
+    <div className="bg-gray-900 flex flex-col min-h-screen">
       <Navbar />
 
       {/* MAIN CONTENT */}
       <main className="flex flex-1 items-center justify-center p-4">
-        <div className="flex flex-col lg:flex-row-reverse w-full max-w-4xl bg-white shadow-lg rounded-lg overflow-hidden">
+        <div className="flex flex-col lg:flex-row-reverse w-full max-w-4xl bg-gray-800 shadow-lg rounded-lg overflow-hidden">
           {/* LEFT SIDE FORM */}
-          <div className="w-full lg:w-1/2 p-6 flex flex-col justify-center bg-gradient-to-b from-gray-50 to-white">
+          <div className="w-full lg:w-1/2 p-6 flex flex-col justify-center bg-gradient-to-b from-gray-700 to-gray-800">
             {/* Login Type Selection */}
             {!showForm && (
               <div className="space-y-4 mb-6">
-                <h2 className="text-xl sm:text-2xl font-bold text-center text-blue-600 mb-4">
+                <h2 className="text-xl sm:text-2xl font-bold text-center text-blue-400 mb-4">
                   Select Login Type
                 </h2>
 
@@ -203,16 +203,16 @@ const MultiLogin = () => {
                 <div className="flex items-center mb-4">
                   <button
                     onClick={showLoginTypeSelection}
-                    className="text-blue-600 hover:text-blue-800 text-sm"
+                    className="text-blue-400 hover:text-blue-300 text-sm"
                   >
                     <i className="fas fa-arrow-left mr-2"></i>Back
                   </button>
                 </div>
 
-                <h2 className="text-xl sm:text-2xl font-bold text-center text-blue-600 mb-2">
+                <h2 className="text-xl sm:text-2xl font-bold text-center text-blue-400 mb-2">
                   {getLoginTitle()}
                 </h2>
-                <p className="text-gray-500 text-center mb-4 sm:mb-6 text-sm">
+                <p className="text-gray-300 text-center mb-4 sm:mb-6 text-sm">
                   Please enter your credentials
                 </p>
 
@@ -221,8 +221,8 @@ const MultiLogin = () => {
                   <div
                     className={`text-center py-2 mb-4 rounded text-sm ${
                       message.type === "error"
-                        ? "bg-red-100 text-red-600"
-                        : "bg-green-100 text-green-600"
+                        ? "bg-red-900 text-red-200"
+                        : "bg-green-900 text-green-200"
                     }`}
                   >
                     {message.text}
@@ -233,7 +233,7 @@ const MultiLogin = () => {
                   <div>
                     <label
                       htmlFor="userId"
-                      className="block mb-1 font-medium text-sm"
+                      className="block mb-1 font-medium text-gray-200 text-sm"
                     >
                       {getUserIdLabel()}
                     </label>
@@ -243,14 +243,14 @@ const MultiLogin = () => {
                       name="userId"
                       value={formData.userId}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 sm:px-4 sm:py-2 border rounded focus:outline-none focus:ring-2 focus:ring-black text-sm"
+                      className="w-full px-3 py-2 sm:px-4 sm:py-2 border border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white text-sm"
                       placeholder={getUserIdPlaceholder()}
                     />
                   </div>
                   <div>
                     <label
                       htmlFor="password"
-                      className="block mb-1 font-medium text-sm"
+                      className="block mb-1 font-medium text-gray-200 text-sm"
                     >
                       Password
                     </label>
@@ -260,7 +260,7 @@ const MultiLogin = () => {
                       name="password"
                       value={formData.password}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 sm:px-4 sm:py-2 border rounded focus:outline-none focus:ring-2 focus:ring-black text-sm"
+                      className="w-full px-3 py-2 sm:px-4 sm:py-2 border border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white text-sm"
                       placeholder={getPasswordPlaceholder()}
                     />
                   </div>
@@ -268,7 +268,7 @@ const MultiLogin = () => {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition text-base font-medium shadow-md"
+                    className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition text-base font-medium shadow-md disabled:opacity-50"
                   >
                     {isLoading ? (
                       <>
@@ -306,9 +306,9 @@ const MultiLogin = () => {
           </div>
 
           {/* RIGHT SIDE IMAGE */}
-          <div className="hidden lg:flex lg:w-1/2 items-center justify-center bg-gray-50 p-4">
+          <div className="hidden lg:flex lg:w-1/2 items-center justify-center bg-gray-700 p-4">
             <img
-              src="/images/TodayTruck.jpg"
+              src="/images/truck_image.png"
               alt="Login Illustration"
               className="max-w-[80%] max-h-[80%] object-contain"
             />
@@ -327,7 +327,9 @@ const MultiLogin = () => {
                   support@valmodeliver.in
                 </span>
               </div>
-              <p className="text-xs">© 2025 Valmo. All rights reserved.</p>
+              <p className="text-xs text-gray-400">
+                © 2025 Valmo. All rights reserved.
+              </p>
             </div>
             <div className="flex space-x-4 sm:space-x-6 text-xs sm:text-sm">
               <a href="/privacy" className="hover:text-white transition-colors">

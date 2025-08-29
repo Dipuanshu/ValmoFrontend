@@ -21,6 +21,7 @@ const AgentDashboard = () => {
     pincode: "",
   });
   const [pincodes, setPincodes] = useState([""]); // For multiple pincodes
+  const [pincodeLocations, setPincodeLocations] = useState({}); // Store locations for each pincode
   const [editFormData, setEditFormData] = useState({
     name: "",
     phoneNumber: "",
@@ -94,106 +95,10 @@ const AgentDashboard = () => {
     }
   };
 
-  const callApi = async (url, payload) => {
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok || data?.success === false) {
-      const msg = data?.message || "Request failed";
-      throw new Error(msg);
-    }
-    return data;
-  };
-
-  const optimisticUpdate = (email, name, patch) => {
-    setApplications((prev) =>
-      prev.map((app) =>
-        app.email === email && app.name === name ? { ...app, ...patch } : app
-      )
-    );
-    setFilteredApplications((prev) =>
-      prev.map((app) =>
-        app.email === email && app.name === name ? { ...app, ...patch } : app
-      )
-    );
-  };
-
-  const handleApprove = async (appObj) => {
-    optimisticUpdate(appObj.email, appObj.name, {
-      approved: true,
-      rejected: false,
-    });
-    try {
-      await callApi(`${API_BASE}/application/approve`, {
-        email: appObj.email,
-        name: appObj.name,
-      });
-      loadApplications();
-      alert("Approval mail sent ✅");
-    } catch (err) {
-      optimisticUpdate(appObj.email, appObj.name, { approved: false });
-      alert("Approve failed: " + err.message);
-    }
-  };
-
-  const handleReject = async (appObj) => {
-    optimisticUpdate(appObj.email, appObj.name, {
-      rejected: true,
-      approved: false,
-    });
-    try {
-      await callApi(`${API_BASE}/application/one-time-fee`, {
-        email: appObj.email,
-        name: appObj.name,
-      });
-      loadApplications();
-      alert("Rejected successfully ✅");
-    } catch (err) {
-      optimisticUpdate(appObj.email, appObj.name, { rejected: false });
-      alert("Reject failed: " + err.message);
-    }
-  };
-
-  const handleAgreement = async (appObj) => {
-    optimisticUpdate(appObj.email, appObj.name, { agreementSent: true });
-    try {
-      await callApi(`${API_BASE}/application/agreement`, {
-        email: appObj.email,
-        name: appObj.name,
-      });
-      loadApplications();
-      alert("Agreement mail sent ✅");
-    } catch (err) {
-      optimisticUpdate(appObj.email, appObj.name, { agreementSent: false });
-      alert("Agreement failed: " + err.message);
-    }
-  };
-
   const handleLogout = () => {
     localStorage.removeItem("userType");
     localStorage.removeItem("userId");
     navigate("/");
-  };
-
-  const handleViewApplication = (applicationId) => {
-    navigate(`/view-application/${applicationId}`);
-  };
-
-  const handleEditApplication = (application) => {
-    setEditingApplication(application);
-    setEditFormData({
-      name: application.name || "",
-      phoneNumber: application.phoneNumber || "",
-      email: application.email || "",
-      pincode: application.pincode || "",
-    });
-    if (application.pincode) fetchEditLocation(application.pincode);
-    else setEditLocation("");
-    setEditSelectedLocations([]);
-    setIsEditModalOpen(true);
   };
 
   const handleDeleteApplication = async (applicationId) => {
@@ -238,9 +143,17 @@ const AgentDashboard = () => {
     newPincodes[index] = value;
     setPincodes(newPincodes);
 
-    // Fetch location for the last pincode field when it has 6 digits
-    if (index === pincodes.length - 1 && value.length === 6) {
+    // Fetch location for the pincode when it has 6 digits
+    if (value.length === 6) {
       fetchLocation(value);
+    } else if (value.length < 6) {
+      // If pincode is being edited and is now less than 6 digits, remove its location
+      setPincodeLocations((prev) => {
+        const newLocations = { ...prev };
+        delete newLocations[value];
+        updateCombinedLocation();
+        return newLocations;
+      });
     }
   };
 
@@ -263,12 +176,25 @@ const AgentDashboard = () => {
       if (Array.isArray(data) && data[0]?.Status === "Success") {
         const postOffices = data[0].PostOffice || [];
         const locationStrings = postOffices.map((po) => po.Name);
-        setLocation(locationStrings.join(" | "));
-        setSelectedLocations([]);
+        // Store locations for this specific pincode
+        setPincodeLocations((prev) => ({
+          ...prev,
+          [pincode]: locationStrings.join(" | "),
+        }));
+        // Update the combined location state
+        updateCombinedLocation();
       }
     } catch (err) {
       console.error(err);
     }
+  };
+
+  // Function to update the combined location from all pincode locations
+  const updateCombinedLocation = () => {
+    const allLocations = Object.values(pincodeLocations)
+      .filter((loc) => loc) // Filter out empty locations
+      .join(" | ");
+    setLocation(allLocations);
   };
 
   const fetchEditLocation = async (pincode) => {
@@ -316,6 +242,9 @@ const AgentDashboard = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // Make sure we have the latest combined location
+    updateCombinedLocation();
+
     const locationToSend =
       selectedLocations.length > 0 ? selectedLocations.join(" | ") : location;
 
@@ -346,6 +275,7 @@ const AgentDashboard = () => {
         alert("Error: " + (err.message || "Failed"));
         setFormData({ name: "", phoneNumber: "", email: "", pincode: "" });
         setPincodes([""]);
+        setPincodeLocations({});
         setLocation("");
         setSelectedLocations([]);
         setShowCopyLink(false);
@@ -356,6 +286,7 @@ const AgentDashboard = () => {
       alert("Something went wrong!");
       setFormData({ name: "", phoneNumber: "", email: "", pincode: "" });
       setPincodes([""]);
+      setPincodeLocations({});
       setLocation("");
       setSelectedLocations([]);
       setShowCopyLink(false);
@@ -412,6 +343,7 @@ const AgentDashboard = () => {
   const handleResetForm = () => {
     setFormData({ name: "", phoneNumber: "", email: "", pincode: "" });
     setPincodes([""]);
+    setPincodeLocations({});
     setLocation("");
     setSelectedLocations([]);
     setShowCopyLink(false);
@@ -510,7 +442,7 @@ const AgentDashboard = () => {
         <div className="bg-white rounded-lg shadow-lg">
           <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
             <h3 className="text-base sm:text-lg font-semibold text-gray-900">
-              Recent Applications
+              Recent Proposals
             </h3>
             <div className="relative w-full sm:w-auto">
               <input
@@ -556,9 +488,6 @@ const AgentDashboard = () => {
                       <th className="px-4 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Submitted Date
                       </th>
-                      <th className="px-4 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
-                      </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
@@ -598,66 +527,6 @@ const AgentDashboard = () => {
                               ).toLocaleDateString()
                             : "-"}
                         </td>
-                        <td className="px-4 py-3 sm:px-6 sm:py-4 whitespace-nowrap text-xs font-medium">
-                          <div className="flex items-center space-x-1 sm:space-x-2">
-                            <button
-                              onClick={() =>
-                                handleViewApplication(application._id)
-                              }
-                              className="text-blue-600 hover:text-blue-900 bg-gray-100 hover:bg-gray-200 p-1.5 sm:p-2 rounded-full transition-all duration-200 shadow-sm hover:shadow-md"
-                              title="View Application"
-                            >
-                              <i className="fas fa-eye text-xs sm:text-sm"></i>
-                            </button>
-
-                            <button
-                              onClick={() => handleEditApplication(application)}
-                              className="text-yellow-600 hover:text-yellow-900 bg-gray-100 hover:bg-gray-200 p-1.5 sm:p-2 rounded-full transition-all duration-200 shadow-sm hover:shadow-md"
-                              title="Edit Application"
-                            >
-                              <i className="fas fa-edit text-xs sm:text-sm"></i>
-                            </button>
-
-                            <button
-                              onClick={() => handleApprove(application)}
-                              disabled={application.status !== "pending"}
-                              className={`px-2 py-1 text-xs rounded font-medium shadow-sm transition-all duration-200 ${
-                                application.status === "approved" ||
-                                application.status === "agreement" ||
-                                application.status === "one-time-fee"
-                                  ? "bg-green-500 text-white cursor-not-allowed opacity-75"
-                                  : "bg-gray-200 text-gray-700 hover:bg-green-500 hover:text-white hover:shadow-md"
-                              }`}
-                            >
-                              Approve
-                            </button>
-
-                            <button
-                              onClick={() => handleAgreement(application)}
-                              disabled={application.status !== "approved"}
-                              className={`px-2 py-1 text-xs rounded font-medium shadow-sm transition-all duration-200 ${
-                                application.status === "agreement" ||
-                                application.status === "one-time-fee"
-                                  ? "bg-yellow-400 text-white cursor-not-allowed opacity-75"
-                                  : "bg-gray-200 text-gray-700 hover:bg-yellow-400 hover:text-white hover:shadow-md"
-                              }`}
-                            >
-                              Agreement
-                            </button>
-
-                            <button
-                              onClick={() => handleReject(application)}
-                              disabled={application.status !== "agreement"}
-                              className={`px-2 py-1 text-xs rounded font-medium shadow-sm transition-all duration-200 ${
-                                application.status === "one-time-fee"
-                                  ? "bg-red-500 text-white cursor-not-allowed opacity-75"
-                                  : "bg-gray-200 text-gray-700 hover:bg-red-500 hover:text-white hover:shadow-md"
-                              }`}
-                            >
-                              One Time Fee
-                            </button>
-                          </div>
-                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -686,6 +555,7 @@ const AgentDashboard = () => {
                     pincode: "",
                   });
                   setPincodes([""]);
+                  setPincodeLocations({});
                   setLocation("");
                   setShowCopyLink(false);
                 }}
