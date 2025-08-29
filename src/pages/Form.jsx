@@ -147,14 +147,6 @@ const Form = () => {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get("token");
 
-    if (!token) {
-      showToastMessage(
-        "This form requires a valid invitation link. Please contact your agent for a proper invitation.",
-        "error"
-      );
-      return false;
-    }
-
     try {
       // In a real implementation, you would call your API here
       // const response = await fetch(`/api/validate-token/${token}`);
