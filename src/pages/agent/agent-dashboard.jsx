@@ -3,13 +3,12 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-const API_BASE = "https://valmobackend.onrender.com"; // जरूरत हो तो .env से ले लेना
+const API_BASE = "https://valmobackend.onrender.com";
 
 const AgentDashboard = () => {
   const navigate = useNavigate();
   const [agentData, setAgentData] = useState(null);
   const [applications, setApplications] = useState([]);
-  console.log("application", applications);
   const [filteredApplications, setFilteredApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -39,7 +38,6 @@ const AgentDashboard = () => {
   useEffect(() => {
     checkAuth();
     loadApplications();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -68,23 +66,23 @@ const AgentDashboard = () => {
     setAgentData({ userId });
   };
 
+  // ---------- Load applications with backend status ----------
   const loadApplications = async () => {
     setLoading(true);
     try {
       const response = await fetch(`${API_BASE}/application`);
       const result = await response.json();
-
       if (response.ok && result.success) {
-        const applicationsWithDetails = (result.data || []).map((app) => ({
+        const applicationsWithStatus = (result.data || []).map((app) => ({
           ...app,
           phoneNumber: app.phoneNumber || "N/A",
           location: app.location || "N/A",
-          approved: !!app.approved,
-          rejected: !!app.rejected,
-          agreementSent: !!app.agreementSent,
+          approved: app.status === "approved",
+          rejected: app.status === "rejected",
+          agreementSent: app.status === "agreementSent",
         }));
-        setApplications(applicationsWithDetails);
-        setFilteredApplications(applicationsWithDetails);
+        setApplications(applicationsWithStatus);
+        setFilteredApplications(applicationsWithStatus);
       } else {
         console.error("Failed to load applications:", result?.message);
       }
@@ -95,7 +93,6 @@ const AgentDashboard = () => {
     }
   };
 
-  // ---------- Helpers ----------
   const callApi = async (url, payload) => {
     const res = await fetch(url, {
       method: "POST",
@@ -123,28 +120,19 @@ const AgentDashboard = () => {
     );
   };
 
-  // ---------- Actions (email + name based) ----------
   const handleApprove = async (appObj) => {
-    // UI optimistic
     optimisticUpdate(appObj.email, appObj.name, {
       approved: true,
       rejected: false,
     });
-
     try {
-      const data = await callApi(`${API_BASE}/application/approve`, {
+      await callApi(`${API_BASE}/application/approve`, {
         email: appObj.email,
         name: appObj.name,
       });
-      // If backend has customerId in response, keep it
-      if (data?.customerId) {
-        optimisticUpdate(appObj.email, appObj.name, {
-          customerId: data.customerId,
-        });
-      }
+      loadApplications();
       alert("Approval mail sent ✅");
     } catch (err) {
-      // revert on error
       optimisticUpdate(appObj.email, appObj.name, { approved: false });
       alert("Approve failed: " + err.message);
     }
@@ -156,12 +144,12 @@ const AgentDashboard = () => {
       approved: false,
     });
     try {
-      // अगर backend में /application/reject बना है तो इसे use करें
-      const data = await callApi(`${API_BASE}/application/reject`, {
+      await callApi(`${API_BASE}/application/one-time-fee`, {
         email: appObj.email,
         name: appObj.name,
       });
-      alert(data?.message || "Rejected and mail sent ✅");
+      loadApplications();
+      alert("Rejected successfully ✅");
     } catch (err) {
       optimisticUpdate(appObj.email, appObj.name, { rejected: false });
       alert("Reject failed: " + err.message);
@@ -171,12 +159,12 @@ const AgentDashboard = () => {
   const handleAgreement = async (appObj) => {
     optimisticUpdate(appObj.email, appObj.name, { agreementSent: true });
     try {
-      // backend पर /application/agreement route बना होना चाहिए
-      const data = await callApi(`${API_BASE}/application/agreement`, {
+      await callApi(`${API_BASE}/application/agreement`, {
         email: appObj.email,
         name: appObj.name,
       });
-      alert(data?.message || "Agreement mail sent ✅");
+      loadApplications();
+      alert("Agreement mail sent ✅");
     } catch (err) {
       optimisticUpdate(appObj.email, appObj.name, { agreementSent: false });
       alert("Agreement failed: " + err.message);
@@ -201,17 +189,9 @@ const AgentDashboard = () => {
       email: application.email || "",
       pincode: application.pincode || "",
     });
-
-    // If there's a pincode, fetch the location
-    if (application.pincode) {
-      fetchEditLocation(application.pincode);
-    } else {
-      setEditLocation("");
-    }
-
-    // Reset selected locations for edit modal
+    if (application.pincode) fetchEditLocation(application.pincode);
+    else setEditLocation("");
     setEditSelectedLocations([]);
-
     setIsEditModalOpen(true);
   };
 
@@ -224,11 +204,8 @@ const AgentDashboard = () => {
             method: "DELETE",
           }
         );
-
         const result = await response.json();
-
         if (response.ok && result.success) {
-          // Remove the deleted application from state
           setApplications((prev) =>
             prev.filter((app) => app._id !== applicationId)
           );
@@ -252,19 +229,13 @@ const AgentDashboard = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-
-    if (name === "pincode" && value.length === 6) {
-      fetchLocation(value);
-    }
+    if (name === "pincode" && value.length === 6) fetchLocation(value);
   };
 
   const handleEditInputChange = (e) => {
     const { name, value } = e.target;
     setEditFormData((prev) => ({ ...prev, [name]: value }));
-
-    if (name === "pincode" && value.length === 6) {
-      fetchEditLocation(value);
-    }
+    if (name === "pincode" && value.length === 6) fetchEditLocation(value);
   };
 
   const fetchLocation = async (pincode) => {
@@ -275,18 +246,12 @@ const AgentDashboard = () => {
       const data = await response.json();
       if (Array.isArray(data) && data[0]?.Status === "Success") {
         const postOffices = data[0].PostOffice || [];
-        // Take ALL post offices (no limit)
-        const locationStrings = postOffices.map(
-          (postOffice) => postOffice.Name
-        );
-        // Join them with a separator
-        const locationString = locationStrings.join(" | ");
-        setLocation(locationString);
-        // Reset selected locations when new pincode is entered
+        const locationStrings = postOffices.map((po) => po.Name);
+        setLocation(locationStrings.join(" | "));
         setSelectedLocations([]);
       }
-    } catch (error) {
-      console.error("Error fetching location:", error);
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -298,67 +263,45 @@ const AgentDashboard = () => {
       const data = await response.json();
       if (Array.isArray(data) && data[0]?.Status === "Success") {
         const postOffices = data[0].PostOffice || [];
-        // Take ALL post offices (no limit)
-        const locationStrings = postOffices.map(
-          (postOffice) => postOffice.Name
-        );
-        // Join them with a separator
-        const locationString = locationStrings.join(" | ");
-        setEditLocation(locationString);
+        setEditLocation(postOffices.map((po) => po.Name).join(" | "));
       }
-    } catch (error) {
-      console.error("Error fetching location:", error);
+    } catch (err) {
+      console.error(err);
     }
   };
 
   const toggleEditLocationSelection = (location) => {
-    setEditSelectedLocations((prev) => {
-      if (prev.includes(location)) {
-        return prev.filter((item) => item !== location);
-      } else {
-        return [...prev, location];
-      }
-    });
+    setEditSelectedLocations((prev) =>
+      prev.includes(location)
+        ? prev.filter((l) => l !== location)
+        : [...prev, location]
+    );
   };
 
   const selectAllEditLocations = () => {
-    if (editLocation) {
-      const allLocations = editLocation.split(" | ");
-      setEditSelectedLocations(allLocations);
-    }
+    if (editLocation) setEditSelectedLocations(editLocation.split(" | "));
   };
 
-  const deselectAllEditLocations = () => {
-    setEditSelectedLocations([]);
-  };
+  const deselectAllEditLocations = () => setEditSelectedLocations([]);
 
   const toggleLocationSelection = (location) => {
-    setSelectedLocations((prev) => {
-      if (prev.includes(location)) {
-        return prev.filter((item) => item !== location);
-      } else {
-        return [...prev, location];
-      }
-    });
+    setSelectedLocations((prev) =>
+      prev.includes(location)
+        ? prev.filter((l) => l !== location)
+        : [...prev, location]
+    );
   };
 
   const selectAllLocations = () => {
-    if (location) {
-      const allLocations = location.split(" | ");
-      setSelectedLocations(allLocations);
-    }
+    if (location) setSelectedLocations(location.split(" | "));
   };
 
-  const deselectAllLocations = () => {
-    setSelectedLocations([]);
-  };
+  const deselectAllLocations = () => setSelectedLocations([]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Use selected locations if any, otherwise use the full location string
     const locationToSend =
       selectedLocations.length > 0 ? selectedLocations.join(" | ") : location;
-
     const newProposal = { ...formData, location: locationToSend };
     try {
       const response = await fetch(`${API_BASE}/proposals`, {
@@ -366,28 +309,23 @@ const AgentDashboard = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newProposal),
       });
-
       if (response.ok) {
         alert("Application submitted successfully!");
-        // Set the proposal link (you can customize this URL pattern as needed)
         const link = `https://yourdomain.com/proposal-form?id=${Date.now()}`;
         setProposalLink(link);
         setShowCopyLink(true);
-        // Keep the modal open to show the copy link button
       } else {
         const err = await response.json().catch(() => ({}));
         alert("Error: " + (err.message || "Failed"));
-        // Close the modal on error
         setFormData({ name: "", phoneNumber: "", email: "", pincode: "" });
         setLocation("");
         setSelectedLocations([]);
         setShowCopyLink(false);
         setIsModalOpen(false);
       }
-    } catch (error) {
-      console.error("Error submitting proposal:", error);
+    } catch (err) {
+      console.error(err);
       alert("Something went wrong!");
-      // Close the modal on error
       setFormData({ name: "", phoneNumber: "", email: "", pincode: "" });
       setLocation("");
       setSelectedLocations([]);
@@ -399,17 +337,11 @@ const AgentDashboard = () => {
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Use selected locations if any, otherwise use the full location string
       const locationToSend =
         editSelectedLocations.length > 0
           ? editSelectedLocations.join(" | ")
           : editLocation;
-
-      const formDataToSend = {
-        ...editFormData,
-        location: locationToSend,
-      };
-
+      const formDataToSend = { ...editFormData, location: locationToSend };
       const response = await fetch(
         `${API_BASE}/application/${editingApplication._id}`,
         {
@@ -418,12 +350,9 @@ const AgentDashboard = () => {
           body: JSON.stringify(formDataToSend),
         }
       );
-
       const result = await response.json();
-
       if (response.ok && result.success) {
         alert("Application updated successfully!");
-        // Update the application in state
         const updatedApplications = applications.map((app) =>
           app._id === editingApplication._id
             ? { ...app, ...formDataToSend }
@@ -439,29 +368,16 @@ const AgentDashboard = () => {
             (result?.message || "Unknown error")
         );
       }
-    } catch (error) {
-      console.error("Error updating application:", error);
-      alert("Error updating application: " + error.message);
+    } catch (err) {
+      console.error(err);
+      alert("Error updating application: " + err.message);
     }
   };
 
   const handleCopyLink = () => {
     navigator.clipboard
       .writeText(proposalLink)
-      .then(() => {
-        alert("Link copied to clipboard!");
-      })
-      .catch((err) => {
-        console.error("Failed to copy link: ", err);
-        // Fallback method
-        const textArea = document.createElement("textarea");
-        textArea.value = proposalLink;
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand("copy");
-        document.body.removeChild(textArea);
-        alert("Link copied to clipboard!");
-      });
+      .then(() => alert("Link copied!"));
   };
 
   const handleResetForm = () => {
@@ -591,17 +507,18 @@ const AgentDashboard = () => {
                         <td className="px-4 py-3 sm:px-6 sm:py-4 whitespace-nowrap">
                           <span
                             className={`px-2 py-1 inline-flex text-xs leading-4 font-semibold rounded-full ${
-                              application.approved
+                              application.status === "approved"
                                 ? "bg-green-100 text-green-800"
-                                : application.rejected
+                                : application.status === "rejected"
                                 ? "bg-red-100 text-red-800"
+                                : application.status === "agreementSent"
+                                ? "bg-blue-100 text-blue-800"
                                 : "bg-yellow-100 text-yellow-800"
                             }`}
                           >
-                            {application.approved
-                              ? "Approved"
-                              : application.rejected
-                              ? "Rejected"
+                            {application.status
+                              ? application.status.charAt(0).toUpperCase() +
+                                application.status.slice(1)
                               : "Pending"}
                           </span>
                         </td>
@@ -616,7 +533,7 @@ const AgentDashboard = () => {
                           <div className="flex items-center space-x-1 sm:space-x-2">
                             <button
                               onClick={() =>
-                                handleViewApplication(application.email)
+                                handleViewApplication(application._id)
                               }
                               className="text-blue-600 hover:text-blue-900 bg-gray-100 hover:bg-gray-200 p-1.5 sm:p-2 rounded-full transition-all duration-200 shadow-sm hover:shadow-md"
                               title="View Application"
@@ -634,9 +551,11 @@ const AgentDashboard = () => {
 
                             <button
                               onClick={() => handleApprove(application)}
-                              disabled={application.approved}
+                              disabled={application.status !== "pending"}
                               className={`px-2 py-1 text-xs rounded font-medium shadow-sm transition-all duration-200 ${
-                                application.approved
+                                application.status === "approved" ||
+                                application.status === "agreement" ||
+                                application.status === "one-time-fee"
                                   ? "bg-green-500 text-white cursor-not-allowed opacity-75"
                                   : "bg-gray-200 text-gray-700 hover:bg-green-500 hover:text-white hover:shadow-md"
                               }`}
@@ -646,14 +565,12 @@ const AgentDashboard = () => {
 
                             <button
                               onClick={() => handleAgreement(application)}
-                              disabled={
-                                application.agreementSent !== false &&
-                                application.agreementSent !== undefined
-                              }
+                              disabled={application.status !== "approved"}
                               className={`px-2 py-1 text-xs rounded font-medium shadow-sm transition-all duration-200 ${
-                                application.agreementSent
-                                  ? "bg-green-500 text-white cursor-not-allowed opacity-75"
-                                  : "bg-gray-200 text-gray-700 hover:bg-green-500 hover:text-white hover:shadow-md"
+                                application.status === "agreement" ||
+                                application.status === "one-time-fee"
+                                  ? "bg-yellow-400 text-white cursor-not-allowed opacity-75"
+                                  : "bg-gray-200 text-gray-700 hover:bg-yellow-400 hover:text-white hover:shadow-md"
                               }`}
                             >
                               Agreement
@@ -661,11 +578,11 @@ const AgentDashboard = () => {
 
                             <button
                               onClick={() => handleReject(application)}
-                              disabled={application.rejected}
+                              disabled={application.status !== "agreement"}
                               className={`px-2 py-1 text-xs rounded font-medium shadow-sm transition-all duration-200 ${
-                                application.rejected
-                                  ? "bg-green-500 text-white cursor-not-allowed opacity-75"
-                                  : "bg-gray-200 text-gray-700 hover:bg-green-500 hover:text-white hover:shadow-md"
+                                application.status === "one-time-fee"
+                                  ? "bg-red-500 text-white cursor-not-allowed opacity-75"
+                                  : "bg-gray-200 text-gray-700 hover:bg-red-500 hover:text-white hover:shadow-md"
                               }`}
                             >
                               One Time Fee
