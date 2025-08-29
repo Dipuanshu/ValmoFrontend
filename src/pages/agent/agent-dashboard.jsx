@@ -20,6 +20,7 @@ const AgentDashboard = () => {
     email: "",
     pincode: "",
   });
+  const [pincodes, setPincodes] = useState([""]); // For multiple pincodes
   const [editFormData, setEditFormData] = useState({
     name: "",
     phoneNumber: "",
@@ -232,6 +233,21 @@ const AgentDashboard = () => {
     if (name === "pincode" && value.length === 6) fetchLocation(value);
   };
 
+  const handlePincodeChange = (index, value) => {
+    const newPincodes = [...pincodes];
+    newPincodes[index] = value;
+    setPincodes(newPincodes);
+
+    // Fetch location for the last pincode field when it has 6 digits
+    if (index === pincodes.length - 1 && value.length === 6) {
+      fetchLocation(value);
+    }
+  };
+
+  const addPincodeField = () => {
+    setPincodes([...pincodes, ""]);
+  };
+
   const handleEditInputChange = (e) => {
     const { name, value } = e.target;
     setEditFormData((prev) => ({ ...prev, [name]: value }));
@@ -302,7 +318,18 @@ const AgentDashboard = () => {
     e.preventDefault();
     const locationToSend =
       selectedLocations.length > 0 ? selectedLocations.join(" | ") : location;
-    const newProposal = { ...formData, location: locationToSend };
+
+    // Combine all pincodes into a single string
+    const pincodesString = pincodes
+      .filter((pin) => pin.trim() !== "")
+      .join(", ");
+
+    const newProposal = {
+      ...formData,
+      pincode: pincodesString,
+      location: locationToSend,
+    };
+
     try {
       const response = await fetch(`${API_BASE}/proposals`, {
         method: "POST",
@@ -310,7 +337,7 @@ const AgentDashboard = () => {
         body: JSON.stringify(newProposal),
       });
       if (response.ok) {
-        alert("Application submitted successfully!");
+        // Removed the alert message
         const link = `https://yourdomain.com/proposal-form?id=${Date.now()}`;
         setProposalLink(link);
         setShowCopyLink(true);
@@ -318,6 +345,7 @@ const AgentDashboard = () => {
         const err = await response.json().catch(() => ({}));
         alert("Error: " + (err.message || "Failed"));
         setFormData({ name: "", phoneNumber: "", email: "", pincode: "" });
+        setPincodes([""]);
         setLocation("");
         setSelectedLocations([]);
         setShowCopyLink(false);
@@ -327,6 +355,7 @@ const AgentDashboard = () => {
       console.error(err);
       alert("Something went wrong!");
       setFormData({ name: "", phoneNumber: "", email: "", pincode: "" });
+      setPincodes([""]);
       setLocation("");
       setSelectedLocations([]);
       setShowCopyLink(false);
@@ -382,6 +411,7 @@ const AgentDashboard = () => {
 
   const handleResetForm = () => {
     setFormData({ name: "", phoneNumber: "", email: "", pincode: "" });
+    setPincodes([""]);
     setLocation("");
     setSelectedLocations([]);
     setShowCopyLink(false);
@@ -435,6 +465,45 @@ const AgentDashboard = () => {
           <p className="text-gray-600 text-sm sm:text-base">
             Manage and review franchise applications
           </p>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
+          <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 text-center">
+            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+              <i className="fas fa-file-contract text-xl sm:text-2xl text-blue-600"></i>
+            </div>
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">
+              Create Proposal
+            </h3>
+            <p className="text-gray-600 mb-3 sm:mb-4 text-xs sm:text-sm">
+              Help customers submit new franchise proposals
+            </p>
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg transition-all duration-200 font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5 text-sm sm:text-base"
+            >
+              Create Proposal
+            </button>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 text-center">
+            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+              <i className="fas fa-list text-xl sm:text-2xl text-green-600"></i>
+            </div>
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">
+              All Applications
+            </h3>
+            <p className="text-gray-600 mb-3 sm:mb-4 text-xs sm:text-sm">
+              View all franchise applications
+            </p>
+            <button
+              onClick={() => navigate("/agent-applications")}
+              className="bg-green-600 hover:bg-green-700 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg transition-all duration-200 font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5 text-sm sm:text-base"
+            >
+              View All
+            </button>
+          </div>
         </div>
 
         {/* Applications List */}
@@ -597,45 +666,6 @@ const AgentDashboard = () => {
             )}
           </div>
         </div>
-
-        {/* Quick Actions */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mt-6 sm:mt-8">
-          <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 text-center">
-            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
-              <i className="fas fa-file-contract text-xl sm:text-2xl text-blue-600"></i>
-            </div>
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">
-              Create Proposal
-            </h3>
-            <p className="text-gray-600 mb-3 sm:mb-4 text-xs sm:text-sm">
-              Help customers submit new franchise proposals
-            </p>
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg transition-all duration-200 font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5 text-sm sm:text-base"
-            >
-              Create Proposal
-            </button>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 text-center">
-            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
-              <i className="fas fa-list text-xl sm:text-2xl text-green-600"></i>
-            </div>
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">
-              All Applications
-            </h3>
-            <p className="text-gray-600 mb-3 sm:mb-4 text-xs sm:text-sm">
-              View all franchise applications
-            </p>
-            <button
-              onClick={loadApplications}
-              className="bg-green-600 hover:bg-green-700 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg transition-all duration-200 font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5 text-sm sm:text-base"
-            >
-              View All
-            </button>
-          </div>
-        </div>
       </main>
 
       {/* Create Proposal Modal */}
@@ -655,6 +685,7 @@ const AgentDashboard = () => {
                     email: "",
                     pincode: "",
                   });
+                  setPincodes([""]);
                   setLocation("");
                   setShowCopyLink(false);
                 }}
@@ -701,6 +732,26 @@ const AgentDashboard = () => {
                       className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-r-md text-white bg-blue-600 hover:bg-blue-700"
                     >
                       <i className="fas fa-copy mr-1"></i> Copy
+                    </button>
+                  </div>
+                  <div className="flex items-center">
+                    <textarea
+                      value={`Hello, your proposal has been created. Please click on the link below to proceed: ${proposalLink}`}
+                      readOnly
+                      className="flex-1 min-w-0 block w-full px-3 py-2 rounded-l-md border border-gray-300 bg-gray-50 text-sm"
+                      rows="3"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(
+                          `Hello, your proposal has been created. Please click on the link below to proceed: ${proposalLink}`
+                        );
+                        alert("Message copied!");
+                      }}
+                      className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-r-md text-white bg-green-600 hover:bg-green-700"
+                    >
+                      <i className="fas fa-copy mr-1"></i> Copy Message
                     </button>
                   </div>
                   <div className="flex justify-end space-x-3">
@@ -756,16 +807,30 @@ const AgentDashboard = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Pincode
+                      Pincodes
                     </label>
-                    <input
-                      type="text"
-                      name="pincode"
-                      value={formData.pincode}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      required
-                    />
+                    {pincodes.map((pincode, index) => (
+                      <div key={index} className="flex items-center mb-2">
+                        <input
+                          type="text"
+                          value={pincode}
+                          onChange={(e) =>
+                            handlePincodeChange(index, e.target.value)
+                          }
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder={`Pincode ${index + 1}`}
+                        />
+                        {index === pincodes.length - 1 && (
+                          <button
+                            type="button"
+                            onClick={addPincodeField}
+                            className="ml-2 bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-md"
+                          >
+                            <i className="fas fa-plus"></i>
+                          </button>
+                        )}
+                      </div>
+                    ))}
                   </div>
                   {location && (
                     <div>
@@ -780,13 +845,6 @@ const AgentDashboard = () => {
                             className="text-xs bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded"
                           >
                             Select All
-                          </button>
-                          <button
-                            type="button"
-                            onClick={deselectAllLocations}
-                            className="text-xs bg-gray-500 hover:bg-gray-600 text-white px-2 py-1 rounded"
-                          >
-                            Deselect All
                           </button>
                         </div>
                       </div>
@@ -920,13 +978,6 @@ const AgentDashboard = () => {
                           className="text-xs bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded"
                         >
                           Select All
-                        </button>
-                        <button
-                          type="button"
-                          onClick={deselectAllEditLocations}
-                          className="text-xs bg-gray-500 hover:bg-gray-600 text-white px-2 py-1 rounded"
-                        >
-                          Deselect All
                         </button>
                       </div>
                     </div>

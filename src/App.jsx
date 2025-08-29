@@ -25,6 +25,7 @@ import AdminHome from "./pages/admin/AdminHome";
 // Agent component
 
 import AgentDashboard from "./pages/agent/agent-dashboard";
+import AgentApplications from "./pages/agent/AgentApplications";
 
 function App() {
   return (
@@ -71,6 +72,7 @@ function App() {
 
           {/* Agent Routes */}
           <Route path="/agent/agent-dashboard" element={<AgentDashboard />} />
+          <Route path="/agent-applications" element={<AgentApplications />} />
         </Routes>
       </div>
     </Router>

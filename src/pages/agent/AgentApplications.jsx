@@ -4,9 +4,8 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-const AdminApplications = () => {
+const AgentApplications = () => {
   const navigate = useNavigate();
-  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [applications, setApplications] = useState([]);
   const [filteredApplications, setFilteredApplications] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -18,15 +17,15 @@ const AdminApplications = () => {
   const [selectedBanks, setSelectedBanks] = useState([]);
   const [loadingBanks, setLoadingBanks] = useState(false);
 
-  // Toggle Admin Dropdown
-  const toggleDropdown = () => setDropdownOpen((prev) => !prev);
-
-  // Logout Function
-  const logout = () => {
-    localStorage.removeItem("userType");
-    localStorage.removeItem("userId");
-    navigate("/");
-  };
+  // Check if user is agent
+  useEffect(() => {
+    const userType = localStorage.getItem("userType");
+    if (userType !== "agent") {
+      navigate("/multi-login");
+      return;
+    }
+    fetchApplications();
+  }, []);
 
   // Fetch all applications
   const fetchApplications = async () => {
@@ -61,72 +60,13 @@ const AdminApplications = () => {
     }
   }, [searchTerm, applications]);
 
-  // Check if user is admin
-  useEffect(() => {
-    const userType = localStorage.getItem("userType");
-    if (userType !== "admin") {
-      navigate("/multi-login");
-      return;
-    }
-    fetchApplications();
-  }, []);
-
-  // Handle application actions
-  const handleApprove = async (application) => {
-    try {
-      await axios.post(
-        "https://valmobackend.onrender.com/application/approve",
-        {
-          email: application.email,
-          name: application.name,
-        }
-      );
-      alert("Application approved successfully ✅");
-      fetchApplications(); // Refresh the list
-    } catch (error) {
-      console.error("Error approving application:", error);
-      alert("Failed to approve application ❌");
-    }
-  };
-
-  const handleReject = async (application) => {
-    try {
-      await axios.post("https://valmobackend.onrender.com/application/reject", {
-        email: application.email,
-        name: application.name,
-      });
-      alert("Application rejected successfully ✅");
-      fetchApplications(); // Refresh the list
-    } catch (error) {
-      console.error("Error rejecting application:", error);
-      alert("Failed to reject application ❌");
-    }
-  };
-
-  const handleAgreement = async (application) => {
-    try {
-      await axios.post(
-        "https://valmobackend.onrender.com/application/agreement",
-        {
-          email: application.email,
-          name: application.name,
-        }
-      );
-      alert("Agreement sent successfully ✅");
-      fetchApplications(); // Refresh the list
-    } catch (error) {
-      console.error("Error sending agreement:", error);
-      alert("Failed to send agreement ❌");
-    }
-  };
-
   // View Application
   const handleViewApplication = (applicationId) => {
     // Navigate to view application page
     navigate(`/view-application/${encodeURIComponent(applicationId)}`);
   };
 
-  // Edit Application (placeholder - would typically open edit modal)
+  // Edit Application
   const handleEditApplication = (application) => {
     // For now, we'll just show an alert - you can implement edit modal later
     alert("Edit functionality would open here");
@@ -154,7 +94,15 @@ const AdminApplications = () => {
       const response = await axios.get(
         "https://valmobackend.onrender.com/bankDetails"
       );
-      setAvailableBanks(response.data.data || []);
+
+      const bankData = response.data.data;
+
+      if (bankData) {
+        // Wrap the single bank object inside an array
+        setAvailableBanks([bankData]);
+      } else {
+        setAvailableBanks([]);
+      }
     } catch (error) {
       console.error("Error loading bank details:", error);
       alert("Failed to load bank details ❌");
@@ -188,7 +136,7 @@ const AdminApplications = () => {
     }
 
     try {
-      // For each selected bank, send assignment to backend
+      // For each selected bank, send assignment to back
       const promises = selectedBanks.map((bankId) => {
         const bank = availableBanks.find((b) => b._id === bankId);
         return axios.post(
@@ -211,6 +159,53 @@ const AdminApplications = () => {
     }
   };
 
+  // Copy proposal function
+  const handleCopyProposal = async (application) => {
+    try {
+      // Call the same API as used in create proposal
+      const response = await axios.post(
+        "https://valmobackend.onrender.com/sendProposal",
+        {
+          email: application.email,
+          name: application.fullName,
+        }
+      );
+
+      if (response.data.success) {
+        // Copy to clipboard
+        const proposalText = `Dear ${application.fullName},
+
+Your application has been approved. Please find the payment details below:
+Bank: ${response.data.bankDetails.bankName}
+Account Number: ${response.data.bankDetails.accountNumber}
+IFSC Code: ${response.data.bankDetails.ifscCode}
+Branch: ${response.data.bankDetails.branchName}
+
+For UPI payments:
+UPI ID: ${response.data.bankDetails.upiId || "N/A"}
+
+Or scan the QR code attached to make the payment.
+
+Thank you for choosing Valmo!`;
+
+        await navigator.clipboard.writeText(proposalText);
+        alert("Proposal copied to clipboard! ✅");
+      } else {
+        alert("Failed to generate proposal ❌");
+      }
+    } catch (error) {
+      console.error("Error copying proposal:", error);
+      alert("Failed to copy proposal ❌");
+    }
+  };
+
+  // Logout Function
+  const logout = () => {
+    localStorage.removeItem("userType");
+    localStorage.removeItem("userId");
+    navigate("/");
+  };
+
   return (
     <>
       {/* HEADER */}
@@ -226,51 +221,6 @@ const AdminApplications = () => {
           </h1>
         </div>
         <div className="flex items-center space-x-3 sm:space-x-4">
-          {/* Admin Menu Dropdown */}
-          <div className="relative">
-            <button
-              onClick={toggleDropdown}
-              className="text-white hover:text-blue-200 flex items-center text-sm"
-            >
-              <i className="fas fa-bars mr-1 sm:mr-2" />
-              Menu
-              <i className="fas fa-chevron-down ml-1 sm:ml-2" />
-            </button>
-            {dropdownOpen && (
-              <div className="absolute right-0 mt-1 sm:mt-2 w-48 bg-white rounded-md shadow-lg z-50">
-                <div className="py-1">
-                  <a
-                    href="/admin/admin-home"
-                    className="block px-3 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-700 hover:bg-gray-100 flex items-center"
-                  >
-                    <i className="fas fa-home mr-1 sm:mr-2" />
-                    Home
-                  </a>
-                  <a
-                    href="/admin/admin-agent-management"
-                    className="block px-3 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-700 hover:bg-gray-100 flex items-center"
-                  >
-                    <i className="fas fa-users mr-1 sm:mr-2" />
-                    Add Agent
-                  </a>
-                  <a
-                    href="/admin/admin-applications"
-                    className="block px-3 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-700 hover:bg-gray-100 bg-blue-50 flex items-center"
-                  >
-                    <i className="fas fa-file-alt mr-1 sm:mr-2" />
-                    Applications
-                  </a>
-                  <a
-                    href="/admin/admin-bank-details"
-                    className="block px-3 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-700 hover:bg-gray-100 flex items-center"
-                  >
-                    <i className="fas fa-university mr-1 sm:mr-2" />
-                    Bank Details
-                  </a>
-                </div>
-              </div>
-            )}
-          </div>
           <button
             onClick={logout}
             className="bg-red-500 text-white px-3 py-1 sm:px-4 sm:py-2 rounded text-xs sm:text-sm hover:bg-red-600 flex items-center"
@@ -391,36 +341,40 @@ const AdminApplications = () => {
                         <div className="flex items-center space-x-1">
                           <button
                             onClick={() =>
-                              handleViewApplication(application.email)
+                              handleViewApplication(application._id)
                             }
-                            className="text-blue-600 hover:text-blue-900 bg-gray-100 hover:bg-gray-200 p-1.5 sm:p-2 rounded-full transition-all duration-200 shadow-sm hover:shadow-md"
-                            title="View Application"
+                            title="View"
+                            className="text-blue-600 hover:text-blue-700 p-1"
                           >
-                            <i className="fas fa-eye text-xs sm:text-sm"></i>
+                            <i className="fas fa-eye"></i>
                           </button>
-
                           <button
                             onClick={() => handleEditApplication(application)}
-                            className="text-yellow-600 hover:text-yellow-900 bg-gray-100 hover:bg-gray-200 p-1.5 sm:p-2 rounded-full transition-all duration-200 shadow-sm hover:shadow-md"
-                            title="Edit Application"
+                            title="Edit"
+                            className="text-yellow-600 hover:text-yellow-700 p-1"
                           >
-                            <i className="fas fa-edit text-xs sm:text-sm"></i>
+                            <i className="fas fa-edit"></i>
                           </button>
-
-                          <button
-                            onClick={() => handleBankSelection(application)}
-                            className="text-green-600 hover:text-green-900 bg-gray-100 hover:bg-gray-200 p-1.5 sm:p-2 rounded-full transition-all duration-200 shadow-sm hover:shadow-md"
-                            title="Select Bank"
-                          >
-                            <i className="fas fa-university text-xs sm:text-sm"></i>
-                          </button>
-
                           <button
                             onClick={() => handleDelete(application._id)}
-                            className="text-red-600 hover:text-red-900 bg-gray-100 hover:bg-gray-200 p-1.5 sm:p-2 rounded-full transition-all duration-200 shadow-sm hover:shadow-md"
-                            title="Delete Application"
+                            title="Delete"
+                            className="text-red-600 hover:text-red-700 p-1"
                           >
-                            <i className="fas fa-trash text-xs sm:text-sm"></i>
+                            <i className="fas fa-trash"></i>
+                          </button>
+                          <button
+                            onClick={() => handleBankSelection(application)}
+                            title="Assign Bank"
+                            className="text-green-600 hover:text-green-700 p-1"
+                          >
+                            <i className="fas fa-university"></i>
+                          </button>
+                          <button
+                            onClick={() => handleCopyProposal(application)}
+                            title="Copy Proposal"
+                            className="text-purple-600 hover:text-purple-700 p-1"
+                          >
+                            <i className="fas fa-copy"></i>
                           </button>
                         </div>
                       </td>
@@ -431,127 +385,106 @@ const AdminApplications = () => {
             )}
           </div>
         </div>
-      </div>
 
-      {/* Bank Selection Modal */}
-      {isBankModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-              <h3 className="text-lg font-semibold text-gray-900">
-                Select Banks for {selectedApplication?.fullName}
-              </h3>
-              <button
-                onClick={() => setIsBankModalOpen(false)}
-                className="text-gray-400 hover:text-gray-500"
-              >
-                <i className="fas fa-times"></i>
-              </button>
-            </div>
-            <div className="px-6 py-4 space-y-4">
-              {loadingBanks ? (
-                <div className="text-center py-4">
-                  <i className="fas fa-spinner fa-spin text-xl text-blue-600 mb-2"></i>
-                  <p className="text-gray-600">Loading banks...</p>
-                </div>
-              ) : availableBanks.length === 0 ? (
-                <div className="text-center py-4">
-                  <i className="fas fa-university text-2xl text-gray-400 mb-2"></i>
-                  <p className="text-gray-600">No banks available</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <div className="border rounded-lg p-3">
-                    <div className="flex items-center">
-                      <input
-                        type="checkbox"
-                        id="qr_code"
-                        checked={selectedBanks.includes("qr_code")}
-                        onChange={() => toggleBankSelection("qr_code")}
-                        className="h-4 w-4 text-blue-600 rounded"
-                      />
-                      <label
-                        htmlFor="qr_code"
-                        className="ml-2 text-sm font-medium text-gray-700"
-                      >
-                        QR Code Payment
-                      </label>
-                    </div>
+        {/* Bank Selection Modal */}
+        {isBankModalOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+              <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Select Banks for {selectedApplication?.fullName}
+                </h3>
+                <button
+                  onClick={() => setIsBankModalOpen(false)}
+                  className="text-gray-400 hover:text-gray-500"
+                >
+                  <i className="fas fa-times"></i>
+                </button>
+              </div>
+              <div className="px-6 py-4 space-y-4">
+                {loadingBanks ? (
+                  <div className="text-center py-4">
+                    <i className="fas fa-spinner fa-spin text-xl text-blue-600 mb-2"></i>
+                    <p className="text-gray-600">Loading banks...</p>
                   </div>
-
-                  {availableBanks.map((bank) => (
-                    <div key={bank._id} className="border rounded-lg p-3">
-                      <div className="flex items-start">
+                ) : !availableBanks || availableBanks.length === 0 ? (
+                  <div className="text-center py-4">
+                    <i className="fas fa-university text-2xl text-gray-400 mb-2"></i>
+                    <p className="text-gray-600">No banks available</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="border rounded-lg p-3">
+                      <div className="flex items-center">
                         <input
                           type="checkbox"
-                          id={bank._id}
-                          checked={selectedBanks.includes(bank._id)}
-                          onChange={() => toggleBankSelection(bank._id)}
-                          className="h-4 w-4 text-blue-600 rounded mt-1"
+                          id="qr_code"
+                          checked={selectedBanks.includes("qr_code")}
+                          onChange={() => toggleBankSelection("qr_code")}
+                          className="h-4 w-4 text-blue-600 rounded"
                         />
-                        <label htmlFor={bank._id} className="ml-2">
-                          <div className="font-medium text-sm">
-                            {bank.bankName}
-                          </div>
-                          <div className="text-xs text-gray-600 mt-1">
-                            <div>Account: {bank.accountNumber}</div>
-                            <div>IFSC: {bank.ifscCode}</div>
-                            <div>UPI: {bank.upiId || "N/A"}</div>
-                          </div>
+                        <label
+                          htmlFor="qr_code"
+                          className="ml-2 text-sm font-medium text-gray-700"
+                        >
+                          QR Code Payment
                         </label>
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
-            <div className="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
-              <button
-                type="button"
-                onClick={() => setIsBankModalOpen(false)}
-                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 font-medium"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleAssignBanks}
-                disabled={selectedBanks.length === 0 || loadingBanks}
-                className={`px-4 py-2 rounded-md font-medium text-white ${
-                  selectedBanks.length === 0 || loadingBanks
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-blue-600 hover:bg-blue-700"
-                }`}
-              >
-                Assign Selected
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
-      {/* FOOTER */}
-      <footer className="bg-gray-900 text-gray-300 py-4 sm:py-6 mt-6 sm:mt-8">
-        <div className="container mx-auto px-4 max-w-6xl">
-          <div className="flex flex-col md:flex-row justify-between items-center space-y-3 sm:space-y-4 md:space-y-0">
-            <div className="text-center md:text-left">
-              <p className="text-xs sm:text-sm">
-                © 2025 Valmo. All rights reserved.
-              </p>
-            </div>
-            <div className="flex space-x-4 sm:space-x-6 text-xs sm:text-sm">
-              <a href="/privacy" className="hover:text-white transition-colors">
-                Privacy Policy
-              </a>
-              <a href="/terms" className="hover:text-white transition-colors">
-                Terms of Use
-              </a>
+                    {availableBanks.map((bank) => (
+                      <div key={bank._id} className="border rounded-lg p-3">
+                        <div className="flex items-start">
+                          <input
+                            type="checkbox"
+                            id={bank._id}
+                            checked={selectedBanks.includes(bank._id)}
+                            onChange={() => toggleBankSelection(bank._id)}
+                            className="h-4 w-4 text-blue-600 rounded mt-1"
+                          />
+                          <label htmlFor={bank._id} className="ml-2">
+                            <div className="font-medium text-sm">
+                              {bank.bankName}
+                            </div>
+                            <div className="text-xs text-gray-600 mt-1">
+                              <div>Account: {bank.accountNumber}</div>
+                              <div>IFSC: {bank.ifscCode}</div>
+                              <div>UPI: {bank.upiId || "N/A"}</div>
+                            </div>
+                          </label>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+                <button
+                  type="button"
+                  onClick={() => setIsBankModalOpen(false)}
+                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleAssignBanks}
+                  disabled={selectedBanks.length === 0 || loadingBanks}
+                  className={`px-4 py-2 rounded-md font-medium text-white ${
+                    selectedBanks.length === 0 || loadingBanks
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-blue-600 hover:bg-blue-700"
+                  }`}
+                >
+                  Assign Selected
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      </footer>
+        )}
+      </div>
     </>
   );
 };
 
-export default AdminApplications;
+export default AgentApplications;
