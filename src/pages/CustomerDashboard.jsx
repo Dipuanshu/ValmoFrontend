@@ -228,7 +228,9 @@ const CustomerDashboard = () => {
                       </span>
                     </div>
                     <div>
-                      <strong className="text-gray-700 text-sm">Address:</strong>{" "}
+                      <strong className="text-gray-700 text-sm">
+                        Address:
+                      </strong>{" "}
                       <span className="text-gray-900 text-sm">
                         {applicationDetails.residentialStreet},{" "}
                         {applicationDetails.residentialCity},{" "}
@@ -248,7 +250,9 @@ const CustomerDashboard = () => {
                       </span>
                     </div>
                     <div>
-                      <strong className="text-gray-700 text-sm">Experience:</strong>{" "}
+                      <strong className="text-gray-700 text-sm">
+                        Experience:
+                      </strong>{" "}
                       <span className="text-gray-900 text-sm">
                         {applicationDetails.professionalBackground || "N/A"}
                       </span>
@@ -371,65 +375,360 @@ const CustomerDashboard = () => {
             )}
           </div>
 
-          {/* Payment Status Card */}
-          <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-6 hover:shadow-2xl transition-shadow duration-300">
-            <h3 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4 sm:mb-6">
-              <i className="fas fa-credit-card mr-2 sm:mr-3 text-green-600"></i>Payment
-              Status
+          {/* Status Message */}
+          <div className="mb-6">
+            {applicationDetails?.rejected ? (
+              <div className="bg-red-50 border-l-4 border-red-500 p-4">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <svg
+                      className="h-5 w-5 text-red-400"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm font-medium text-red-800">
+                      Application Rejected
+                    </p>
+                    <p className="text-sm text-red-700 mt-1">
+                      Your application has been rejected. Please contact support
+                      for more information.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : applicationDetails?.oneTimeFeePaid ? (
+              <div className="bg-green-50 border-l-4 border-green-500 p-4">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <svg
+                      className="h-5 w-5 text-green-400"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm font-medium text-green-800">
+                      Processing Complete
+                    </p>
+                    <p className="text-sm text-green-700 mt-1">
+                      Your application has been fully processed and is ready to
+                      proceed.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : applicationDetails?.agreementSent ? (
+              <div className="bg-blue-50 border-l-4 border-blue-500 p-4">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <svg
+                      className="h-5 w-5 text-blue-400"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm font-medium text-blue-800">
+                      Agreement Sent
+                    </p>
+                    <p className="text-sm text-blue-700 mt-1">
+                      Please review and sign the agreement sent to your email.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : applicationDetails?.approved ? (
+              <div className="bg-green-50 border-l-4 border-green-500 p-4">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <svg
+                      className="h-5 w-5 text-green-400"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm font-medium text-green-800">
+                      Application Approved
+                    </p>
+                    <p className="text-sm text-green-700 mt-1">
+                      Your application has been approved. Please proceed with
+                      the next steps.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <svg
+                      className="h-5 w-5 text-yellow-400"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm font-medium text-yellow-800">
+                      Application Pending
+                    </p>
+                    <p className="text-sm text-yellow-700 mt-1">
+                      Your application is under review. We'll notify you of any
+                      updates.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Stepper */}
+          <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-6 mb-6 hover:shadow-2xl transition-shadow duration-300">
+            <h3 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-6">
+              Application Progress
             </h3>
 
-            <div className="text-center py-4">
-              {applicationDetails?.approved ? (
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                  <i className="fas fa-check-circle text-xl sm:text-2xl text-green-600 mb-2"></i>
-                  <p className="text-green-800 font-semibold text-sm sm:text-base">
-                    Application Approved
-                  </p>
-                  <p className="text-green-600 text-xs sm:text-sm mt-1">
-                    Your application has been approved. You can now proceed with
-                    the payment.
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center relative">
+              {/* Step 1: Approval */}
+              <div className="flex flex-col items-center w-full md:w-auto mb-8 md:mb-0">
+                <div
+                  className={`flex items-center justify-center w-12 h-12 rounded-full border-2 ${
+                    applicationDetails?.approved ||
+                    applicationDetails?.rejected ||
+                    applicationDetails?.agreementSent ||
+                    applicationDetails?.oneTimeFeePaid
+                      ? "bg-green-500 border-green-500"
+                      : applicationDetails && !applicationDetails.rejected
+                      ? "bg-blue-500 border-blue-500"
+                      : "bg-gray-200 border-gray-300"
+                  }`}
+                >
+                  {applicationDetails?.approved ||
+                  applicationDetails?.rejected ||
+                  applicationDetails?.agreementSent ||
+                  applicationDetails?.oneTimeFeePaid ? (
+                    <svg
+                      className="w-6 h-6 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M5 13l4 4L19 7"
+                      ></path>
+                    </svg>
+                  ) : applicationDetails?.rejected ? (
+                    <svg
+                      className="w-6 h-6 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M6 18L18 6M6 6l12 12"
+                      ></path>
+                    </svg>
+                  ) : (
+                    <span
+                      className={`font-medium ${
+                        applicationDetails && !applicationDetails.rejected
+                          ? "text-white"
+                          : "text-gray-500"
+                      }`}
+                    >
+                      1
+                    </span>
+                  )}
+                </div>
+                <div className="mt-3 text-center">
+                  <h3
+                    className={`text-sm font-medium ${
+                      applicationDetails?.approved ||
+                      applicationDetails?.rejected ||
+                      applicationDetails?.agreementSent ||
+                      applicationDetails?.oneTimeFeePaid
+                        ? "text-green-600"
+                        : applicationDetails && !applicationDetails.rejected
+                        ? "text-blue-600"
+                        : "text-gray-500"
+                    }`}
+                  >
+                    Approval
+                  </h3>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Application Review
                   </p>
                 </div>
-              ) : applicationDetails?.oneTimeFeePaid ? (
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                  <i className="fas fa-check-circle text-xl sm:text-2xl text-green-600 mb-2"></i>
-                  <p className="text-green-800 font-semibold text-sm sm:text-base">
-                    One Time Fee Paid
-                  </p>
-                  <p className="text-green-600 text-xs sm:text-sm mt-1">
-                    Your one-time fee has been processed successfully.
+              </div>
+
+              {/* Connector 1 */}
+              <div className="absolute top-6 left-1/6 md:left-1/3 w-2/3 md:w-1/3 h-0.5 bg-gray-200 z-0 hidden md:block"></div>
+              <div className="h-0.5 w-32 bg-gray-200 my-4 md:hidden"></div>
+
+              {/* Step 2: Agreement */}
+              <div className="flex flex-col items-center w-full md:w-auto mb-8 md:mb-0">
+                <div
+                  className={`flex items-center justify-center w-12 h-12 rounded-full border-2 ${
+                    applicationDetails?.agreementSent ||
+                    applicationDetails?.oneTimeFeePaid
+                      ? "bg-green-500 border-green-500"
+                      : applicationDetails?.approved &&
+                        !applicationDetails.rejected
+                      ? "bg-blue-500 border-blue-500"
+                      : "bg-gray-200 border-gray-300"
+                  }`}
+                >
+                  {applicationDetails?.agreementSent ||
+                  applicationDetails?.oneTimeFeePaid ? (
+                    <svg
+                      className="w-6 h-6 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M5 13l4 4L19 7"
+                      ></path>
+                    </svg>
+                  ) : (
+                    <span
+                      className={`font-medium ${
+                        applicationDetails?.approved &&
+                        !applicationDetails.rejected
+                          ? "text-white"
+                          : "text-gray-500"
+                      }`}
+                    >
+                      2
+                    </span>
+                  )}
+                </div>
+                <div className="mt-3 text-center">
+                  <h3
+                    className={`text-sm font-medium ${
+                      applicationDetails?.agreementSent ||
+                      applicationDetails?.oneTimeFeePaid
+                        ? "text-green-600"
+                        : applicationDetails?.approved &&
+                          !applicationDetails.rejected
+                        ? "text-blue-600"
+                        : "text-gray-500"
+                    }`}
+                  >
+                    Agreement
+                  </h3>
+                  <p className="text-xs text-gray-500 mt-1">Sign Documents</p>
+                </div>
+              </div>
+
+              {/* Connector 2 */}
+              <div className="absolute top-6 right-1/6 md:right-1/3 w-2/3 md:w-1/3 h-0.5 bg-gray-200 z-0 hidden md:block"></div>
+              <div className="h-0.5 w-32 bg-gray-200 my-4 md:hidden"></div>
+
+              {/* Step 3: One Time Fee */}
+              <div className="flex flex-col items-center w-full md:w-auto">
+                <div
+                  className={`flex items-center justify-center w-12 h-12 rounded-full border-2 ${
+                    applicationDetails?.oneTimeFeePaid
+                      ? "bg-green-500 border-green-500"
+                      : applicationDetails?.agreementSent
+                      ? "bg-blue-500 border-blue-500"
+                      : "bg-gray-200 border-gray-300"
+                  }`}
+                >
+                  {applicationDetails?.oneTimeFeePaid ? (
+                    <svg
+                      className="w-6 h-6 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M5 13l4 4L19 7"
+                      ></path>
+                    </svg>
+                  ) : (
+                    <span
+                      className={`font-medium ${
+                        applicationDetails?.agreementSent
+                          ? "text-white"
+                          : "text-gray-500"
+                      }`}
+                    >
+                      3
+                    </span>
+                  )}
+                </div>
+                <div className="mt-3 text-center">
+                  <h3
+                    className={`text-sm font-medium ${
+                      applicationDetails?.oneTimeFeePaid
+                        ? "text-green-600"
+                        : applicationDetails?.agreementSent
+                        ? "text-blue-600"
+                        : "text-gray-500"
+                    }`}
+                  >
+                    One Time Fee
+                  </h3>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Payment Processing
                   </p>
                 </div>
-              ) : applicationDetails?.rejected ? (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <i className="fas fa-times-circle text-xl sm:text-2xl text-red-600 mb-2"></i>
-                  <p className="text-red-800 font-semibold text-sm sm:text-base">
-                    Application Rejected
-                  </p>
-                  <p className="text-red-600 text-xs sm:text-sm mt-1">
-                    Your application has been rejected. Please contact support
-                    for more information.
-                  </p>
-                </div>
-              ) : applicationDetails?.agreementSent ? (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <i className="fas fa-file-contract text-xl sm:text-2xl text-blue-600 mb-2"></i>
-                  <p className="text-blue-800 font-semibold text-sm sm:text-base">Agreement Sent</p>
-                  <p className="text-blue-600 text-xs sm:text-sm mt-1">
-                    Please check your email for the agreement document.
-                  </p>
-                </div>
-              ) : (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                  <i className="fas fa-clock text-xl sm:text-2xl text-yellow-600 mb-2"></i>
-                  <p className="text-yellow-800 font-semibold text-sm sm:text-base">
-                    Application Pending
-                  </p>
-                  <p className="text-yellow-600 text-xs sm:text-sm mt-1">
-                    Your application is under review. Please wait for approval.
-                  </p>
-                </div>
-              )}
+              </div>
             </div>
           </div>
         </div>

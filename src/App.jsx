@@ -26,6 +26,7 @@ import AdminHome from "./pages/admin/AdminHome";
 
 import AgentDashboard from "./pages/agent/agent-dashboard";
 import AgentApplications from "./pages/agent/AgentApplications";
+import AdminReport from "./pages/admin/AdminReport";
 
 function App() {
   return (
@@ -69,6 +70,7 @@ function App() {
             element={<AdminAgentManagement />}
           />
           <Route path="/admin/admin-bank-details" element={<BankDetails1 />} />
+          <Route path="/admin/admin-report" element={<AdminReport />} />
 
           {/* Agent Routes */}
           <Route path="/agent/agent-dashboard" element={<AgentDashboard />} />

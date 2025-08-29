@@ -225,7 +225,10 @@ const AdminHome = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 hover:shadow-xl transition-shadow cursor-pointer">
+          <div
+            className="bg-white rounded-lg shadow-lg p-4 sm:p-6 hover:shadow-xl transition-shadow cursor-pointer"
+            onClick={() => navigate("/admin/admin-report")}
+          >
             <div className="text-center">
               <div className="w-12 h-12 sm:w-16 sm:h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
                 <i className="fas fa-chart-bar text-xl sm:text-2xl text-red-600"></i>
