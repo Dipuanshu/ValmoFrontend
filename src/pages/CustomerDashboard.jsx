@@ -15,6 +15,7 @@ const CustomerDashboard = () => {
   const [message, setMessage] = useState({ text: "", type: "" });
   const [status, setStatus] = useState();
   const [Bank, setBank] = useState();
+  console.log("Bank", Bank);
 
   // ✅ interval IDs ko state me mat rakho → useRef
   const timerIntervalRef = useRef(null);
@@ -87,12 +88,14 @@ const CustomerDashboard = () => {
 
   useEffect(() => {
     axios
-      .get(`https://valmobackend.onrender.com/bankDetails`)
+      .get(`https://valmobackend.onrender.com/assignedBanks`)
       .then((res) => {
-        setBank(res.data);
+        if (res.data.success && res.data.data.length > 0) {
+          setBank(res.data.data[0]); // 👈 ek hi record uthana hai
+        }
       })
       .catch((err) => {
-        console.log(err);
+        console.log("Error fetching bank:", err);
       });
   }, []);
 
@@ -827,20 +830,19 @@ const CustomerDashboard = () => {
                 <div className="bg-gray-50 p-4 rounded-xl shadow-sm space-y-1 text-sm text-gray-800 inline-block text-left mt-6">
                   <p className="font-semibold">Bank Details:</p>
                   <p>
-                    🏦 Bank Name: <strong>{Bank.data.bankName}</strong>
+                    🏦 Bank Name: <strong>{Bank.bankName}</strong>
                   </p>
                   <p>
-                    🏛 Branch: <strong>{Bank.data.branchName}</strong>
+                    🏛 Branch: <strong>{Bank.bankBranch}</strong>
                   </p>
                   <p>
-                    👤 A/C Holder:{" "}
-                    <strong>{Bank.data.accountHolderName}</strong>
+                    👤 A/C Holder: <strong>{Bank.accountHolderName}</strong>
                   </p>
                   <p>
-                    🔢 A/C No.: <strong>{Bank.data.accountNumber}</strong>
+                    🔢 A/C No.: <strong>{Bank.accountNumber}</strong>
                   </p>
                   <p>
-                    🆔 IFSC Code: <strong>{Bank.data.ifscCode}</strong>
+                    🆔 IFSC Code: <strong>{Bank.ifscCode}</strong>
                   </p>
                   <p className="text-gray-600 text-xs mt-1">
                     Use these details to complete your payment.

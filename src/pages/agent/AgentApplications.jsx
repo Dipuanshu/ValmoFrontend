@@ -15,8 +15,8 @@ const AgentApplications = () => {
   // Bank selection state
   const [isBankModalOpen, setIsBankModalOpen] = useState(false);
   const [selectedApplication, setSelectedApplication] = useState(null);
-  const [availableBanks, setAvailableBanks] = useState([]);
-  console.log("Avliable", availableBanks);
+  const [availableBanks, setAvailableBanks] = useState();
+  console.log("avilable", availableBanks);
   const [selectedBanks, setSelectedBanks] = useState([]);
   const [loadingBanks, setLoadingBanks] = useState(false);
   // Edit application state
@@ -227,17 +227,27 @@ const AgentApplications = () => {
     }
   };
 
-  // Bank selection functions
   const loadAvailableBanks = async () => {
     try {
       setLoadingBanks(true);
       const response = await axios.get(
         "https://valmobackend.onrender.com/bankDetails"
       );
-      setAvailableBanks(response.data.data || []);
+
+      let data = response.data.data;
+
+      // ✅ force array
+      if (Array.isArray(data)) {
+        setAvailableBanks(data);
+      } else if (data && typeof data === "object") {
+        setAvailableBanks([data]); // wrap single object in array
+      } else {
+        setAvailableBanks([]);
+      }
     } catch (error) {
       console.error("Error loading bank details:", error);
       alert("Failed to load bank details ❌");
+      setAvailableBanks([]);
     } finally {
       setLoadingBanks(false);
     }
@@ -263,28 +273,24 @@ const AgentApplications = () => {
 
   const handleAssignBanks = async () => {
     if (selectedBanks.length === 0) {
-      alert("Please select at least one bank or QR code option");
+      alert("Please select at least one bank option");
       return;
     }
 
     try {
-      // For each selected bank, send assignment to backend
-      const promises = selectedBanks.map((bankId) => {
-        const bank = availableBanks.find((b) => b._id === bankId);
-        return axios.post(
-          "https://valmobackend.onrender.com/assignBankDetails",
-          {
-            customerEmail: selectedApplication.email,
-            bankOption: bankId,
-            bankDetails: bank,
-          }
-        );
+      const bank = availableBanks.find((b) => b._id === selectedBanks[0]);
+
+      await axios.post("https://valmobackend.onrender.com/assignBankDetails", {
+        customerEmail: selectedApplication.email,
+        bankName: bank.bankName,
+        accountNumber: bank.accountNumber,
+        ifscCode: bank.ifscCode,
+        bankBranch: bank.branchName,
       });
 
-      await Promise.all(promises);
       alert("Bank details assigned successfully! ✅");
       setIsBankModalOpen(false);
-      fetchApplications(); // Refresh the list
+      fetchApplications();
     } catch (error) {
       console.error("Error assigning bank details:", error);
       alert("Failed to assign bank details ❌");
@@ -590,7 +596,6 @@ const AgentApplications = () => {
                       </label>
                     </div>
                   </div>
-
                   {availableBanks.map((bank) => (
                     <div key={bank._id} className="border rounded-lg p-3">
                       <div className="flex items-start">

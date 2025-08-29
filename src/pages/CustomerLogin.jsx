@@ -39,7 +39,7 @@ const CustomerLogin = () => {
     setIsLoading(true);
 
     try {
-      // Updated: Now using customerId in API call instead of email
+      // Updated: Now using customerId in API call
       const response = await fetch(
         `https://valmobackend.onrender.com/customer/credentials?customerId=${userId}`
       );
@@ -52,17 +52,18 @@ const CustomerLogin = () => {
         if (password === data.password) {
           showMessage("Login successful! Redirecting...", "success");
 
-          // Store session
+          // ✅ Store session (email + customerId)
           localStorage.setItem(
             "customerSession",
             JSON.stringify({
-              customerId: userId, // Updated: Storing userId as customerId
+              customerId: userId,
+              email: data.email, // Storing email for navigation
               loginTime: new Date().toISOString(),
             })
           );
 
-          // Redirect to customer dashboard
-          setTimeout(() => navigate(`/customer-dashboard/${userId}`), 500);
+          // ✅ Redirect to customer dashboard with email
+          setTimeout(() => navigate(`/customer-dashboard/${data.email}`), 500);
         } else {
           showMessage("Incorrect password", "error");
         }
