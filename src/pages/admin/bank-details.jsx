@@ -139,7 +139,10 @@ const BankDetails1 = () => {
       let res;
       if (editingBankId === "new") {
         // Add new bank
-        res = await axios.post("http://localhost:5000/add-bank", formData);
+        res = await axios.post(
+          "https://valmobackend.onrender.com/add-bank",
+          formData
+        );
       } else {
         // Update existing bank
         res = await axios.put(

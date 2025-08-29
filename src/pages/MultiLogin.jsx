@@ -169,17 +169,8 @@ const MultiLogin = () => {
 
       {/* MAIN CONTENT */}
       <main className="flex flex-1 items-center justify-center p-4">
-        <div className="flex flex-col lg:flex-row w-full max-w-4xl bg-white shadow-lg rounded-lg overflow-hidden">
-          {/* LEFT SIDE IMAGE */}
-          <div className="hidden lg:flex lg:w-1/2 items-center justify-center bg-gray-50 p-4">
-            <img
-              src="/images/truck_image.png"
-              alt="Login Illustration"
-              className="max-w-[80%] max-h-[80%] object-contain"
-            />
-          </div>
-
-          {/* RIGHT SIDE FORM */}
+        <div className="flex flex-col lg:flex-row-reverse w-full max-w-4xl bg-white shadow-lg rounded-lg overflow-hidden">
+          {/* LEFT SIDE FORM */}
           <div className="w-full lg:w-1/2 p-6 flex flex-col justify-center bg-gradient-to-b from-gray-50 to-white">
             {/* Login Type Selection */}
             {!showForm && (
@@ -312,6 +303,15 @@ const MultiLogin = () => {
                 </form>
               </div>
             )}
+          </div>
+
+          {/* RIGHT SIDE IMAGE */}
+          <div className="hidden lg:flex lg:w-1/2 items-center justify-center bg-gray-50 p-4">
+            <img
+              src="/images/TodayTruck.jpg"
+              alt="Login Illustration"
+              className="max-w-[80%] max-h-[80%] object-contain"
+            />
           </div>
         </div>
       </main>
