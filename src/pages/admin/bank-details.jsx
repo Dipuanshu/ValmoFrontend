@@ -153,7 +153,8 @@ const BankDetails1 = () => {
 
       // Check if response exists and handle both success and error cases
       if (res && res.data) {
-        if (res.data.success) {
+        // Check for success - either through success property or status code
+        if (res.data.success || res.status === 200 || res.status === 201) {
           alert("Bank details saved successfully ✅");
           fetchBankDetails(); // Refresh the list
           setEditingBankId(null);

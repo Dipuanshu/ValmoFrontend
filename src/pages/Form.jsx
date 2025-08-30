@@ -1849,9 +1849,15 @@ const Form = () => {
                   <p className="text-lg font-bold">₹18,600</p>
                 </div>
                 <div className="bg-white p-4 rounded-lg shadow-sm">
-                  <p className="text-sm text-gray-600">Security Money</p>
+                  <p className="text-sm text-gray-600">Agreement Fee</p>
                   <p className="text-lg font-bold">
-                    90% refundable after the agreement
+                    ₹90,100 (fully refundable)
+                  </p>
+                </div>
+                <div className="bg-white p-4 rounded-lg shadow-sm">
+                  <p className="text-sm text-gray-600">One-time Setup Fee</p>
+                  <p className="text-lg font-bold">
+                    ₹2,00,000 (lifetime investment)
                   </p>
                 </div>
                 <div className="bg-white p-4 rounded-lg shadow-sm">
@@ -1861,15 +1867,9 @@ const Form = () => {
                   <p className="text-lg font-bold">7.5% annually</p>
                 </div>
                 <div className="bg-white p-4 rounded-lg shadow-sm">
-                  <p className="text-sm text-gray-600">One-time Setup Fee</p>
+                  <p className="text-sm text-gray-600">Security Money</p>
                   <p className="text-lg font-bold">
-                    ₹2,00,000 (lifetime investment)
-                  </p>
-                </div>
-                <div className="bg-white p-4 rounded-lg shadow-sm">
-                  <p className="text-sm text-gray-600">Agreement Fee</p>
-                  <p className="text-lg font-bold">
-                    ₹90,100 (fully refundable)
+                    90% refundable after the agreement
                   </p>
                 </div>
               </div>

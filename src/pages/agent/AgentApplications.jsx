@@ -12,6 +12,10 @@ const AgentApplications = () => {
   const [filteredApplications, setFilteredApplications] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
+  // Loading states for action buttons
+  const [approvingApplications, setApprovingApplications] = useState(new Set());
+  const [agreementApplications, setAgreementApplications] = useState(new Set());
+  const [rejectingApplications, setRejectingApplications] = useState(new Set());
   // Bank selection state
   const [isBankModalOpen, setIsBankModalOpen] = useState(false);
   const [selectedApplication, setSelectedApplication] = useState(null);
@@ -86,6 +90,11 @@ const AgentApplications = () => {
   };
 
   const handleApprove = async (appObj) => {
+    // Add to approving set
+    setApprovingApplications(
+      (prev) => new Set([...prev, `${appObj.email}-${appObj.name}`])
+    );
+
     optimisticUpdate(appObj.email, appObj.name, {
       approved: true,
       rejected: false,
@@ -100,10 +109,22 @@ const AgentApplications = () => {
     } catch (err) {
       optimisticUpdate(appObj.email, appObj.name, { approved: false });
       alert("Approve failed: " + err.message);
+    } finally {
+      // Remove from approving set
+      setApprovingApplications((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(`${appObj.email}-${appObj.name}`);
+        return newSet;
+      });
     }
   };
 
   const handleReject = async (appObj) => {
+    // Add to rejecting set
+    setRejectingApplications(
+      (prev) => new Set([...prev, `${appObj.email}-${appObj.name}`])
+    );
+
     optimisticUpdate(appObj.email, appObj.name, {
       rejected: true,
       approved: false,
@@ -118,10 +139,22 @@ const AgentApplications = () => {
     } catch (err) {
       optimisticUpdate(appObj.email, appObj.name, { rejected: false });
       alert("Reject failed: " + err.message);
+    } finally {
+      // Remove from rejecting set
+      setRejectingApplications((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(`${appObj.email}-${appObj.name}`);
+        return newSet;
+      });
     }
   };
 
   const handleAgreement = async (appObj) => {
+    // Add to agreement set
+    setAgreementApplications(
+      (prev) => new Set([...prev, `${appObj.email}-${appObj.name}`])
+    );
+
     optimisticUpdate(appObj.email, appObj.name, { agreementSent: true });
     try {
       await callApi(`${API_BASE}/application/agreement`, {
@@ -133,6 +166,13 @@ const AgentApplications = () => {
     } catch (err) {
       optimisticUpdate(appObj.email, appObj.name, { agreementSent: false });
       alert("Agreement failed: " + err.message);
+    } finally {
+      // Remove from agreement set
+      setAgreementApplications((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(`${appObj.email}-${appObj.name}`);
+        return newSet;
+      });
     }
   };
 
@@ -337,12 +377,12 @@ const AgentApplications = () => {
   };
 
   return (
-    <>
+    <div className="flex flex-col min-h-screen">
       {/* HEADER */}
       <header className="bg-blue-600 shadow-md py-3 sm:py-4 px-4 sm:px-6 flex items-center justify-between text-white">
         <div className="flex items-center space-x-3 sm:space-x-4">
           <img
-            src="https://registrations-meesho-valmo.in/valmologo.png"
+            src="/images/valmo-logo.svg"
             alt="VALMO"
             className="h-6 sm:h-8"
           />
@@ -361,7 +401,7 @@ const AgentApplications = () => {
         </div>
       </header>
 
-      <div className="container mx-auto p-4 sm:p-6">
+      <div className="container mx-auto p-4 sm:p-6 flex-grow">
         {/* Search Section */}
         <div className="bg-white p-4 sm:p-6 rounded-lg shadow mb-4 sm:mb-6">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 sm:gap-4">
@@ -498,15 +538,53 @@ const AgentApplications = () => {
                           <button
                             onClick={() => handleApprove(application)}
                             disabled={
-                              application.approved || application.rejected
+                              application.approved ||
+                              application.rejected ||
+                              approvingApplications.has(
+                                `${application.email}-${application.name}`
+                              )
                             }
                             className={`px-2 py-1 text-xs rounded font-medium shadow-sm transition-all duration-200 ${
                               application.approved || application.rejected
                                 ? "bg-green-500 text-white cursor-not-allowed opacity-75"
+                                : approvingApplications.has(
+                                    `${application.email}-${application.name}`
+                                  )
+                                ? "bg-green-500 text-white cursor-not-allowed opacity-75"
                                 : "bg-gray-200 text-gray-700 hover:bg-green-500 hover:text-white hover:shadow-md"
                             }`}
                           >
-                            Approve
+                            {approvingApplications.has(
+                              `${application.email}-${application.name}`
+                            ) ? (
+                              <>
+                                <svg
+                                  className="animate-spin -ml-1 mr-1 h-3 w-3 text-white inline"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <circle
+                                    className="opacity-25"
+                                    cx="12"
+                                    cy="12"
+                                    r="10"
+                                    stroke="currentColor"
+                                    strokeWidth="4"
+                                  ></circle>
+                                  <path
+                                    className="opacity-75"
+                                    fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 
+                                    5.291A7.962 7.962 0 014 12H0c0 
+                                    3.042 1.135 5.824 3 7.938l3-2.647z"
+                                  ></path>
+                                </svg>
+                                Approving...
+                              </>
+                            ) : (
+                              "Approve"
+                            )}
                           </button>
 
                           <button
@@ -514,33 +592,108 @@ const AgentApplications = () => {
                             disabled={
                               !application.approved ||
                               application.rejected ||
-                              application.agreementSent
+                              application.agreementSent ||
+                              agreementApplications.has(
+                                `${application.email}-${application.name}`
+                              )
                             }
                             className={`px-2 py-1 text-xs rounded font-medium shadow-sm transition-all duration-200 ${
                               application.agreementSent || application.rejected
                                 ? "bg-yellow-400 text-white cursor-not-allowed opacity-75"
                                 : !application.approved
                                 ? "bg-gray-200 text-gray-700 cursor-not-allowed opacity-75"
+                                : agreementApplications.has(
+                                    `${application.email}-${application.name}`
+                                  )
+                                ? "bg-yellow-400 text-white cursor-not-allowed opacity-75"
                                 : "bg-gray-200 text-gray-700 hover:bg-yellow-400 hover:text-white hover:shadow-md"
                             }`}
                           >
-                            Agreement
+                            {agreementApplications.has(
+                              `${application.email}-${application.name}`
+                            ) ? (
+                              <>
+                                <svg
+                                  className="animate-spin -ml-1 mr-1 h-3 w-3 text-white inline"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <circle
+                                    className="opacity-25"
+                                    cx="12"
+                                    cy="12"
+                                    r="10"
+                                    stroke="currentColor"
+                                    strokeWidth="4"
+                                  ></circle>
+                                  <path
+                                    className="opacity-75"
+                                    fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 
+                                    5.291A7.962 7.962 0 014 12H0c0 
+                                    3.042 1.135 5.824 3 7.938l3-2.647z"
+                                  ></path>
+                                </svg>
+                                Sending...
+                              </>
+                            ) : (
+                              "Agreement"
+                            )}
                           </button>
 
                           <button
                             onClick={() => handleReject(application)}
                             disabled={
-                              !application.agreementSent || application.rejected
+                              !application.agreementSent ||
+                              application.rejected ||
+                              rejectingApplications.has(
+                                `${application.email}-${application.name}`
+                              )
                             }
                             className={`px-2 py-1 text-xs rounded font-medium shadow-sm transition-all duration-200 ${
                               application.rejected
                                 ? "bg-red-500 text-white cursor-not-allowed opacity-75"
                                 : !application.agreementSent
                                 ? "bg-gray-200 text-gray-700 cursor-not-allowed opacity-75"
+                                : rejectingApplications.has(
+                                    `${application.email}-${application.name}`
+                                  )
+                                ? "bg-red-500 text-white cursor-not-allowed opacity-75"
                                 : "bg-gray-200 text-gray-700 hover:bg-red-500 hover:text-white hover:shadow-md"
                             }`}
                           >
-                            One Time Fee
+                            {rejectingApplications.has(
+                              `${application.email}-${application.name}`
+                            ) ? (
+                              <>
+                                <svg
+                                  className="animate-spin -ml-1 mr-1 h-3 w-3 text-white inline"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <circle
+                                    className="opacity-25"
+                                    cx="12"
+                                    cy="12"
+                                    r="10"
+                                    stroke="currentColor"
+                                    strokeWidth="4"
+                                  ></circle>
+                                  <path
+                                    className="opacity-75"
+                                    fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 
+                                    5.291A7.962 7.962 0 014 12H0c0 
+                                    3.042 1.135 5.824 3 7.938l3-2.647z"
+                                  ></path>
+                                </svg>
+                                Processing...
+                              </>
+                            ) : (
+                              "One Time Fee"
+                            )}
                           </button>
                         </div>
                       </td>
@@ -816,7 +969,7 @@ const AgentApplications = () => {
           </div>
         </div>
       </footer>
-    </>
+    </div>
   );
 };
 
