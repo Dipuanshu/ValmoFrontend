@@ -12,34 +12,34 @@ const Navbar = () => {
   };
 
   return (
-    <header className="bg-white shadow-lg">
+    <header className=" bg-[#0B2A4A] shadow-lg">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <img
-              src="/images/ValmoNew.jpg"
+              src="/images/valmo-logo.svg"
               alt="VALMO"
               className="h-6 sm:h-8"
               width="119"
               height="32"
             />
           </div>
-          <nav className="hidden md:flex items-center space-x-4 lg:space-x-6">
+          <nav className="hidden md:flex items-center space-x-4 lg:space-x-6 text-white">
             <a
               href="/"
-              className="text-gray-600 hover:text-blue-600 transition-colors text-sm"
+              className=" hover:text-blue-600 transition-colors text-sm"
             >
               Home
             </a>
             <a
               href="/track"
-              className="text-gray-600 hover:text-blue-600 transition-colors text-sm"
+              className=" hover:text-blue-600 transition-colors text-sm"
             >
               Track Order
             </a>
             <a
               href="/about"
-              className="text-gray-600 hover:text-blue-600 transition-colors text-sm"
+              className=" hover:text-blue-600 transition-colors text-sm"
             >
               About
             </a>

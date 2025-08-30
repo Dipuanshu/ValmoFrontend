@@ -88,16 +88,16 @@ const CustomerDashboard = () => {
 
   useEffect(() => {
     axios
-      .get(`https://valmobackend.onrender.com/assignedBanks`)
+      .get(`https://valmobackend.onrender.com/getAssignedBank/${email}`)
       .then((res) => {
-        if (res.data.success && res.data.data.length > 0) {
-          setBank(res.data.data[0]); // 👈 ek hi record uthana hai
+        if (res.data.success && res.data.bankDetails) {
+          setBank(res.data.bankDetails); // ab Bank me object aayega
         }
       })
       .catch((err) => {
         console.log("Error fetching bank:", err);
       });
-  }, []);
+  }, [email]);
 
   const showMessage = (text, type) => {
     setMessage({ text, type });
@@ -156,16 +156,6 @@ const CustomerDashboard = () => {
               className="h-6 sm:h-8 filter invert"
             />
           </div>
-          <div className="flex flex-col items-center">
-            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-white font-bold text-lg sm:text-xl shadow-lg">
-              {customerSession.email
-                ? customerSession.email.charAt(0).toUpperCase()
-                : "C"}
-            </div>
-            <span className="text-xs text-gray-600 mt-1 font-medium">
-              {customerSession.email || "Customer"}
-            </span>
-          </div>
           <button
             onClick={handlePayNow}
             className="bg-green-600 hover:bg-green-700 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg transition-colors font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-transform duration-200 ease-in-out text-sm sm:text-base"
@@ -179,350 +169,7 @@ const CustomerDashboard = () => {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-4 sm:py-6">
         <div className="max-w-4xl mx-auto">
-          <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 lg:p-8 mb-4 sm:mb-6">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-1 sm:mb-2">
-              Welcome, {applicationDetails?.fullName || "Customer"}!
-            </h2>
-            <p className="text-xs sm:text-sm text-gray-600">
-              Here's your franchise application details
-            </p>
-          </div>
-
-          {/* Alert messages */}
-          {message.text && (
-            <div
-              className={`text-center py-3 mb-4 rounded-lg ${
-                message.type === "success"
-                  ? "bg-green-100 text-green-700 border border-green-300"
-                  : "bg-red-100 text-red-700 border border-red-300"
-              }`}
-            >
-              {message.text}
-            </div>
-          )}
-
-          {/* Application Details Card */}
-          <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-6 mb-6 hover:shadow-2xl transition-shadow duration-300">
-            <h3 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4 sm:mb-6">
-              <i className="fas fa-file-alt mr-2 sm:mr-3 text-blue-600"></i>Your
-              Application Details
-            </h3>
-
-            {applicationDetails ? (
-              <>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-3">
-                    <div>
-                      <strong className="text-gray-700 text-sm">Name:</strong>{" "}
-                      <span className="text-gray-900 text-sm">
-                        {applicationDetails.fullName}
-                      </span>
-                    </div>
-                    <div>
-                      <strong className="text-gray-700 text-sm">Phone:</strong>{" "}
-                      <span className="text-gray-900 text-sm">
-                        {applicationDetails.mobileNumber}
-                      </span>
-                    </div>
-                    <div>
-                      <strong className="text-gray-700 text-sm">Email:</strong>{" "}
-                      <span className="text-gray-900 text-sm">
-                        {applicationDetails.email}
-                      </span>
-                    </div>
-                    <div>
-                      <strong className="text-gray-700 text-sm">
-                        Address:
-                      </strong>{" "}
-                      <span className="text-gray-900 text-sm">
-                        {applicationDetails.residentialStreet},{" "}
-                        {applicationDetails.residentialCity},{" "}
-                        {applicationDetails.residentialDistrict},{" "}
-                        {applicationDetails.residentialState} -{" "}
-                        {applicationDetails.residentialPinCode}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="space-y-3">
-                    <div>
-                      <strong className="text-gray-700 text-sm">
-                        Investment Capacity:
-                      </strong>{" "}
-                      <span className="text-gray-900 text-sm">
-                        {applicationDetails.investmentCapacity}
-                      </span>
-                    </div>
-                    <div>
-                      <strong className="text-gray-700 text-sm">
-                        Experience:
-                      </strong>{" "}
-                      <span className="text-gray-900 text-sm">
-                        {applicationDetails.professionalBackground || "N/A"}
-                      </span>
-                    </div>
-                    <div>
-                      <strong className="text-gray-700 text-sm">
-                        Application Date:
-                      </strong>{" "}
-                      <span className="text-gray-900 text-sm">
-                        {new Date(
-                          applicationDetails.createdAt
-                        ).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <div>
-                      <strong className="text-gray-700 text-sm">Status:</strong>{" "}
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ml-2 ${
-                          applicationDetails.approved
-                            ? "bg-green-100 text-green-800"
-                            : applicationDetails.rejected
-                            ? "bg-red-100 text-red-800"
-                            : applicationDetails.oneTimeFeePaid
-                            ? "bg-green-100 text-green-800"
-                            : applicationDetails.agreementSent
-                            ? "bg-blue-100 text-blue-800"
-                            : "bg-yellow-100 text-yellow-800"
-                        }`}
-                      >
-                        {applicationDetails.approved
-                          ? "Approved"
-                          : applicationDetails.rejected
-                          ? "Rejected"
-                          : applicationDetails.oneTimeFeePaid
-                          ? "One Time Fee Paid"
-                          : applicationDetails.agreementSent
-                          ? "Agreement Sent"
-                          : "Pending"}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Uploaded Documents */}
-                <div className="mt-6 bg-gray-50 p-4 rounded-lg">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-3">
-                    Uploaded Documents
-                  </h3>
-                  <ul className="space-y-2 text-sm">
-                    <li>
-                      <strong>Photo:</strong>{" "}
-                      {applicationDetails.photo ? (
-                        <a
-                          href={applicationDetails.photo}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-blue-600 underline"
-                        >
-                          View
-                        </a>
-                      ) : (
-                        "Not Uploaded"
-                      )}
-                    </li>
-                    <li>
-                      <strong>Aadhar Card:</strong>{" "}
-                      {applicationDetails.aadharCard ? (
-                        <a
-                          href={applicationDetails.aadharCard}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-blue-600 underline"
-                        >
-                          View
-                        </a>
-                      ) : (
-                        "Not Uploaded"
-                      )}
-                    </li>
-                    <li>
-                      <strong>PAN Card:</strong>{" "}
-                      {applicationDetails.panCard ? (
-                        <a
-                          href={applicationDetails.panCard}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-blue-600 underline"
-                        >
-                          View
-                        </a>
-                      ) : (
-                        "Not Uploaded"
-                      )}
-                    </li>
-                    <li>
-                      <strong>Passbook/Cancelled Cheque:</strong>{" "}
-                      {applicationDetails.cancelCheque ? (
-                        <a
-                          href={applicationDetails.cancelCheque}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-blue-600 underline"
-                        >
-                          View
-                        </a>
-                      ) : (
-                        "Not Uploaded"
-                      )}
-                    </li>
-                  </ul>
-                </div>
-              </>
-            ) : (
-              <div className="text-center py-8">
-                <i className="fas fa-spinner fa-spin text-4xl text-blue-600 mb-4"></i>
-                <p className="text-gray-600">
-                  Loading your application details...
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* Status Message */}
-          <div className="mb-6">
-            {applicationDetails?.rejected ? (
-              <div className="bg-red-50 border-l-4 border-red-500 p-4">
-                <div className="flex">
-                  <div className="flex-shrink-0">
-                    <svg
-                      className="h-5 w-5 text-red-400"
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-sm font-medium text-red-800">
-                      Application Rejected
-                    </p>
-                    <p className="text-sm text-red-700 mt-1">
-                      Your application has been rejected. Please contact support
-                      for more information.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ) : applicationDetails?.oneTimeFeePaid ? (
-              <div className="bg-green-50 border-l-4 border-green-500 p-4">
-                <div className="flex">
-                  <div className="flex-shrink-0">
-                    <svg
-                      className="h-5 w-5 text-green-400"
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-sm font-medium text-green-800">
-                      Processing Complete
-                    </p>
-                    <p className="text-sm text-green-700 mt-1">
-                      Your application has been fully processed and is ready to
-                      proceed.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ) : applicationDetails?.agreementSent ? (
-              <div className="bg-blue-50 border-l-4 border-blue-500 p-4">
-                <div className="flex">
-                  <div className="flex-shrink-0">
-                    <svg
-                      className="h-5 w-5 text-blue-400"
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-sm font-medium text-blue-800">
-                      Agreement Sent
-                    </p>
-                    <p className="text-sm text-blue-700 mt-1">
-                      Please review and sign the agreement sent to your email.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ) : applicationDetails?.approved ? (
-              <div className="bg-green-50 border-l-4 border-green-500 p-4">
-                <div className="flex">
-                  <div className="flex-shrink-0">
-                    <svg
-                      className="h-5 w-5 text-green-400"
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-sm font-medium text-green-800">
-                      Application Approved
-                    </p>
-                    <p className="text-sm text-green-700 mt-1">
-                      Your application has been approved. Please proceed with
-                      the next steps.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4">
-                <div className="flex">
-                  <div className="flex-shrink-0">
-                    <svg
-                      className="h-5 w-5 text-yellow-400"
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-sm font-medium text-yellow-800">
-                      Application Pending
-                    </p>
-                    <p className="text-sm text-yellow-700 mt-1">
-                      Your application is under review. We'll notify you of any
-                      updates.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Stepper */}
+          {/* Application Progress Card - Moved above welcome note */}
           <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-6 mb-6 hover:shadow-2xl transition-shadow duration-300">
             <h3 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-6">
               Application Progress
@@ -734,6 +381,206 @@ const CustomerDashboard = () => {
               </div>
             </div>
           </div>
+
+          {/* Welcome Note */}
+          <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 lg:p-8 mb-4 sm:mb-6">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-1 sm:mb-2">
+              Welcome, {applicationDetails?.fullName || "Customer"}!
+            </h2>
+            <p className="text-xs sm:text-sm text-gray-600">
+              Here's your franchise application details
+            </p>
+          </div>
+
+          {/* Alert messages */}
+          {message.text && (
+            <div
+              className={`text-center py-3 mb-4 rounded-lg ${
+                message.type === "success"
+                  ? "bg-green-100 text-green-700 border border-green-300"
+                  : "bg-red-100 text-red-700 border border-red-300"
+              }`}
+            >
+              {message.text}
+            </div>
+          )}
+
+          {/* Application Details Card */}
+          <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-6 mb-6 hover:shadow-2xl transition-shadow duration-300">
+            <h3 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4 sm:mb-6">
+              <i className="fas fa-file-alt mr-2 sm:mr-3 text-blue-600"></i>Your
+              Application Details
+            </h3>
+
+            {applicationDetails ? (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-3">
+                    <div>
+                      <strong className="text-gray-700 text-sm">Name:</strong>{" "}
+                      <span className="text-gray-900 text-sm">
+                        {applicationDetails.fullName}
+                      </span>
+                    </div>
+                    <div>
+                      <strong className="text-gray-700 text-sm">Phone:</strong>{" "}
+                      <span className="text-gray-900 text-sm">
+                        {applicationDetails.mobileNumber}
+                      </span>
+                    </div>
+                    <div>
+                      <strong className="text-gray-700 text-sm">Email:</strong>{" "}
+                      <span className="text-gray-900 text-sm">
+                        {applicationDetails.email}
+                      </span>
+                    </div>
+                    <div>
+                      <strong className="text-gray-700 text-sm">
+                        Address:
+                      </strong>{" "}
+                      <span className="text-gray-900 text-sm">
+                        {applicationDetails.residentialStreet},{" "}
+                        {applicationDetails.residentialCity},{" "}
+                        {applicationDetails.residentialDistrict},{" "}
+                        {applicationDetails.residentialState} -{" "}
+                        {applicationDetails.residentialPinCode}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <div>
+                      <strong className="text-gray-700 text-sm">
+                        Investment Capacity:
+                      </strong>{" "}
+                      <span className="text-gray-900 text-sm">
+                        {applicationDetails.investmentCapacity}
+                      </span>
+                    </div>
+                    <div>
+                      <strong className="text-gray-700 text-sm">
+                        Experience:
+                      </strong>{" "}
+                      <span className="text-gray-900 text-sm">
+                        {applicationDetails.professionalBackground || "N/A"}
+                      </span>
+                    </div>
+                    <div>
+                      <strong className="text-gray-700 text-sm">
+                        Application Date:
+                      </strong>{" "}
+                      <span className="text-gray-900 text-sm">
+                        {new Date(
+                          applicationDetails.createdAt
+                        ).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <div>
+                      <strong className="text-gray-700 text-sm">Status:</strong>{" "}
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ml-2 ${
+                          applicationDetails.approved
+                            ? "bg-green-100 text-green-800"
+                            : applicationDetails.rejected
+                            ? "bg-red-100 text-red-800"
+                            : applicationDetails.oneTimeFeePaid
+                            ? "bg-green-100 text-green-800"
+                            : applicationDetails.agreementSent
+                            ? "bg-blue-100 text-blue-800"
+                            : "bg-yellow-100 text-yellow-800"
+                        }`}
+                      >
+                        {applicationDetails.approved
+                          ? "Approved"
+                          : applicationDetails.rejected
+                          ? "Rejected"
+                          : applicationDetails.oneTimeFeePaid
+                          ? "One Time Fee Paid"
+                          : applicationDetails.agreementSent
+                          ? "Agreement Sent"
+                          : "Pending"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Uploaded Documents */}
+                <div className="mt-6 bg-gray-50 p-4 rounded-lg">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-3">
+                    Uploaded Documents
+                  </h3>
+                  <ul className="space-y-2 text-sm">
+                    <li>
+                      <strong>Photo:</strong>{" "}
+                      {applicationDetails.photo ? (
+                        <a
+                          href={applicationDetails.photo}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-blue-600 underline"
+                        >
+                          View
+                        </a>
+                      ) : (
+                        "Not Uploaded"
+                      )}
+                    </li>
+                    <li>
+                      <strong>Aadhar Card:</strong>{" "}
+                      {applicationDetails.aadharCard ? (
+                        <a
+                          href={applicationDetails.aadharCard}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-blue-600 underline"
+                        >
+                          View
+                        </a>
+                      ) : (
+                        "Not Uploaded"
+                      )}
+                    </li>
+                    <li>
+                      <strong>PAN Card:</strong>{" "}
+                      {applicationDetails.panCard ? (
+                        <a
+                          href={applicationDetails.panCard}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-blue-600 underline"
+                        >
+                          View
+                        </a>
+                      ) : (
+                        "Not Uploaded"
+                      )}
+                    </li>
+                    <li>
+                      <strong>Passbook/Cancelled Cheque:</strong>{" "}
+                      {applicationDetails.cancelCheque ? (
+                        <a
+                          href={applicationDetails.cancelCheque}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-blue-600 underline"
+                        >
+                          View
+                        </a>
+                      ) : (
+                        "Not Uploaded"
+                      )}
+                    </li>
+                  </ul>
+                </div>
+              </>
+            ) : (
+              <div className="text-center py-8">
+                <i className="fas fa-spinner fa-spin text-4xl text-blue-600 mb-4"></i>
+                <p className="text-gray-600">
+                  Loading your application details...
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -748,7 +595,7 @@ const CustomerDashboard = () => {
             </button>
 
             {/* QR Code ya Bank Details */}
-            {Bank?.data?.qrCode ? (
+            {Bank?.qrCode ? (
               <>
                 {/* Offer Section */}
                 {status.data.status === "approved" ? (
@@ -814,7 +661,7 @@ const CustomerDashboard = () => {
                 <div className="text-center mb-6 mt-6">
                   <div className="w-64 h-64 mx-auto bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
                     <img
-                      src={Bank.data.qrCode}
+                      src={Bank.qrCode}
                       alt="QR Code"
                       className="w-full h-full object-contain p-4"
                     />

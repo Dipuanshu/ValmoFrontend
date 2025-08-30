@@ -32,8 +32,6 @@ const AgentDashboard = () => {
   const [editSelectedLocations, setEditSelectedLocations] = useState([]);
   const [location, setLocation] = useState("");
   const [selectedLocations, setSelectedLocations] = useState([]);
-  const [showCopyLink, setShowCopyLink] = useState(false);
-  const [proposalLink, setProposalLink] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [message, setMessage] = useState({ text: "", type: "" });
 
@@ -266,10 +264,14 @@ const AgentDashboard = () => {
         body: JSON.stringify(newProposal),
       });
       if (response.ok) {
-        // Removed the alert message
-        const link = `https://yourdomain.com/proposal-form?id=${Date.now()}`;
-        setProposalLink(link);
-        setShowCopyLink(true);
+        // Removed copy link functionality as per manager's request
+        alert("Proposal created successfully!");
+        setFormData({ name: "", phoneNumber: "", email: "", pincode: "" });
+        setPincodes([""]);
+        setPincodeLocations({});
+        setLocation("");
+        setSelectedLocations([]);
+        setIsModalOpen(false);
       } else {
         const err = await response.json().catch(() => ({}));
         alert("Error: " + (err.message || "Failed"));
@@ -278,7 +280,6 @@ const AgentDashboard = () => {
         setPincodeLocations({});
         setLocation("");
         setSelectedLocations([]);
-        setShowCopyLink(false);
         setIsModalOpen(false);
       }
     } catch (err) {
@@ -289,7 +290,6 @@ const AgentDashboard = () => {
       setPincodeLocations({});
       setLocation("");
       setSelectedLocations([]);
-      setShowCopyLink(false);
       setIsModalOpen(false);
     }
   };
@@ -334,19 +334,12 @@ const AgentDashboard = () => {
     }
   };
 
-  const handleCopyLink = () => {
-    navigator.clipboard
-      .writeText(proposalLink)
-      .then(() => alert("Link copied!"));
-  };
-
   const handleResetForm = () => {
     setFormData({ name: "", phoneNumber: "", email: "", pincode: "" });
     setPincodes([""]);
     setPincodeLocations({});
     setLocation("");
     setSelectedLocations([]);
-    setShowCopyLink(false);
     setIsModalOpen(false);
     loadApplications();
   };
@@ -356,6 +349,101 @@ const AgentDashboard = () => {
   const showMessage = (text, type) => {
     setMessage({ text, type });
     setTimeout(() => setMessage({ text: "", type: "" }), 5000);
+  };
+
+  const handleCopyProposal = (application) => {
+    const pincode =
+      application.pincode ||
+      application.Pincode ||
+      application.residentialPinCode;
+    // Create a formatted message with the proposal details that would be sent in an email
+    let proposalDetails = `
+
+
+
+
+
+    👋 ${application.name},
+
+💥 Greetings from Valmo Logistics! 🚛📦
+As India’s leading logistics partner, we pride ourselves on delivering reliable, fast, and cost-effective shipping solutions—ensuring smooth and efficient deliveries at the lowest cost.
+
+🔥 Great News! Your preferred location and PIN code are available for a Valmo Franchise Partnership—an incredible chance to join one of India’s fastest-growing logistics companies!
+
+✨ Why Partner with Valmo?
+✅ 🚀 9+ lakh orders shipped daily
+✅ 👥 30,000+ delivery executives
+✅ 🤝 3,000+ partners
+✅ 🌐 6,000+ PIN codes served
+
+
+📍 Preferred Location & PIN Code Availability 1 :
+🔹 PIN Code:  ${pincode}
+🔹 Location:  ${application.location}
+
+🔥 Franchise Opportunities & Earnings 💰
+
+💼 1. Basic Model
+💸 Total Investment: ₹1,08,700
+🔹 ₹18,600 ➡ Registration charge for PIN code booking
+🔹 ₹90,100 ➡ Agreement fee (fully refundable within 90 days)
+
+📦 Earnings:
+💰 ₹30 per shipment (300 products/day commitment)
+❌ ₹7 per parcel if cancelled at your warehouse or office
+🚪 ₹15 per parcel if a customer cancels on the doorstep
+
+🚚 2. FOCO Model (Full Company Ownership)
+💸 Total Investment: ₹3,08,700
+🔹 ₹18,600 ➡ Registration charge for PIN code booking
+🔹 ₹90,100 ➡ Agreement fee (fully refundable within 90 days)
+🔹 ₹2,00,000 ➡ Security deposit (refundable when you exit the franchise)
+
+📦 Earnings:
+💰 ₹30 per shipment (300 products/day commitment)
+❌ ₹7 per parcel if cancelled at your warehouse or office
+🚪 ₹15 per parcel if a customer cancels on the doorstep
+
+⭐ Additional Benefits in FOCO Model:
+👩‍💼 3 employees provided by Valmo (salaries covered by the company, approx. ₹15,000/month per employee)
+🏢 50% rent & electricity bill covered by the company
+💻 Office setup with company-designed interiors
+🖥 All necessary equipment provided (barcode machine + 3 laptops with accessories)
+
+📑 Required Documents:
+🪪 Aadhar Card / Voter ID
+🛡 PAN Card
+🏦 Bank Account Details
+📸 Location Images
+🖼 Passport-size Photograph
+
+📌 How to Proceed:
+✅ The application form is available online—upload all required documents directly through the form.
+✨ 👉 https://valmo-frontend.vercel.app/form 👈 ✨
+
+📲 For More Details, Contact Us:
+📞 9654230611  
+📧support@valmodeliver.in
+
+📍 Office Address:
+🏢 3rd Floor, Wing-E, Helios Business Park, Kadubeesanahalli Village, Varthur Hobli, Outer Ring Road, Bellandur, Bangalore South, Karnataka, India, 560103
+
+🚀 We look forward to a successful partnership with you and are excited to grow together!
+
+✨ Best Regards,
+🤝 ${application.name}
+💼 Business Development Team
+🚛 Valmo Logistics`;
+
+    navigator.clipboard
+      .writeText(proposalDetails)
+      .then(() => {
+        alert("Proposal details copied to clipboard!");
+      })
+      .catch((err) => {
+        console.error("Failed to copy: ", err);
+        alert("Failed to copy proposal details");
+      });
   };
 
   return (
@@ -488,6 +576,9 @@ const AgentDashboard = () => {
                       <th className="px-4 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Submitted Date
                       </th>
+                      <th className="px-4 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
@@ -527,6 +618,14 @@ const AgentDashboard = () => {
                               ).toLocaleDateString()
                             : "-"}
                         </td>
+                        <td className="px-4 py-3 sm:px-6 sm:py-4 whitespace-nowrap text-xs text-gray-500">
+                          <button
+                            onClick={() => handleCopyProposal(application)}
+                            className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs"
+                          >
+                            Copy
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -557,84 +656,51 @@ const AgentDashboard = () => {
                   setPincodes([""]);
                   setPincodeLocations({});
                   setLocation("");
-                  setShowCopyLink(false);
                 }}
                 className="text-gray-400 hover:text-gray-500"
               >
                 <i className="fas fa-times"></i>
               </button>
             </div>
-            <form
-              onSubmit={
-                !showCopyLink ? handleSubmit : (e) => e.preventDefault()
-              }
-            >
-              {showCopyLink ? (
-                <div className="px-6 py-4 space-y-4">
-                  <div className="bg-green-50 border border-green-200 rounded-md p-4">
-                    <div className="flex">
-                      <div className="flex-shrink-0">
-                        <i className="fas fa-check-circle text-green-400"></i>
-                      </div>
-                      <div className="ml-3">
-                        <h3 className="text-sm font-medium text-green-800">
-                          Application Submitted Successfully!
-                        </h3>
-                        <div className="mt-2 text-sm text-green-700">
-                          <p>
-                            The proposal has been created. Copy the link below
-                            and send it to the client.
-                          </p>
-                        </div>
+            <form onSubmit={handleSubmit}>
+              <div className="px-6 py-4 space-y-4">
+                <div className="bg-green-50 border border-green-200 rounded-md p-4">
+                  <div className="flex">
+                    <div className="flex-shrink-0">
+                      <i className="fas fa-check-circle text-green-400"></i>
+                    </div>
+                    <div className="ml-3">
+                      <h3 className="text-sm font-medium text-green-800">
+                        Application Submitted Successfully!
+                      </h3>
+                      <div className="mt-2 text-sm text-green-700">
+                        <p>
+                          The proposal has been created. Copy the link below and
+                          send it to the client.
+                        </p>
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center">
-                    <input
-                      type="text"
-                      value={proposalLink}
-                      readOnly
-                      className="flex-1 min-w-0 block w-full px-3 py-2 rounded-l-md border border-gray-300 bg-gray-50 text-sm"
-                    />
-                    <button
-                      type="button"
-                      onClick={handleCopyLink}
-                      className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-r-md text-white bg-blue-600 hover:bg-blue-700"
-                    >
-                      <i className="fas fa-copy mr-1"></i> Copy
-                    </button>
-                  </div>
-                  <div className="flex items-center">
-                    <textarea
-                      value={`Hello, your proposal has been created. Please click on the link below to proceed: ${proposalLink}`}
-                      readOnly
-                      className="flex-1 min-w-0 block w-full px-3 py-2 rounded-l-md border border-gray-300 bg-gray-50 text-sm"
-                      rows="3"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        navigator.clipboard.writeText(
-                          `Hello, your proposal has been created. Please click on the link below to proceed: ${proposalLink}`
-                        );
-                        alert("Message copied!");
-                      }}
-                      className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-r-md text-white bg-green-600 hover:bg-green-700"
-                    >
-                      <i className="fas fa-copy mr-1"></i> Copy Message
-                    </button>
-                  </div>
-                  <div className="flex justify-end space-x-3">
-                    <button
-                      type="button"
-                      onClick={handleResetForm}
-                      className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
-                    >
-                      Done
-                    </button>
-                  </div>
                 </div>
-              ) : (
+                <div className="flex items-center"></div>
+                <div className="flex items-center">
+                  <textarea
+                    readOnly
+                    className="flex-1 min-w-0 block w-full px-3 py-2 rounded-l-md border border-gray-300 bg-gray-50 text-sm"
+                  ></textarea>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(
+                        "Hello, your proposal has been created. Please click on the link below to proceed."
+                      );
+                      alert("Message copied!");
+                    }}
+                    className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-r-md text-white bg-green-600 hover:bg-green-700"
+                  >
+                    <i className="fas fa-copy mr-1"></i> Copy Message
+                  </button>
+                </div>
                 <div className="px-6 py-4 space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -743,24 +809,23 @@ const AgentDashboard = () => {
                     </div>
                   )}
                 </div>
+              </div>
               )}
-              {!showCopyLink && (
-                <div className="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
-                  <button
-                    type="button"
-                    onClick={() => setIsModalOpen(false)}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 font-medium transition-colors duration-200"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium transition-colors duration-200 shadow-sm hover:shadow-md"
-                  >
-                    Submit
-                  </button>
-                </div>
-              )}
+              <div className="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 font-medium transition-colors duration-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium transition-colors duration-200 shadow-sm hover:shadow-md"
+                >
+                  Submit
+                </button>
+              </div>
             </form>
           </div>
         </div>

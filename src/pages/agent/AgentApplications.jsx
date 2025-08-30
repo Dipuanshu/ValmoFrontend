@@ -286,6 +286,8 @@ const AgentApplications = () => {
         accountNumber: bank.accountNumber,
         ifscCode: bank.ifscCode,
         bankBranch: bank.branchName,
+        accountHolderName: bank.accountHolderName,
+        qrCode: bank.qrCode,
       });
 
       alert("Bank details assigned successfully! ✅");
@@ -612,6 +614,7 @@ const AgentApplications = () => {
                           </div>
                           <div className="text-xs text-gray-600 mt-1">
                             <div>Account: {bank.accountNumber}</div>
+                            <div>Account Holder: {bank.accountHolderName}</div>
                             <div>IFSC: {bank.ifscCode}</div>
                             <div>UPI: {bank.upiId || "N/A"}</div>
                           </div>

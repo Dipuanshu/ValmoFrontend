@@ -919,26 +919,6 @@ const Form = () => {
       <main className="container mx-auto px-4 py-8">
         <div className="form-container max-w-4xl mx-auto overflow-hidden">
           {/* Company Header */}
-          <div className="company-header text-white py-8 px-8 text-center relative">
-            <div className="relative z-10">
-              <div className="flex items-center justify-center mb-4">
-                <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-4">
-                  <img
-                    src="https://www.valmo.in/static-assets/valmo-web/valmo-logo-white.svg"
-                    alt="VALMO"
-                    className="h-8 w-8"
-                  />
-                </div>
-                <div>
-                  <h1 className="text-3xl font-bold">VALMO</h1>
-                  <p className="text-blue-100">Franchise Application</p>
-                </div>
-              </div>
-              <p className="text-blue-100 text-sm">
-                Join India's Leading Logistics Network
-              </p>
-            </div>
-          </div>
 
           <form onSubmit={submitForm} className="p-8">
             {/* Section 1: Personal Information */}

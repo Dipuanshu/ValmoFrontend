@@ -374,12 +374,10 @@ const AdminApplications = () => {
               </p>
             </div>
             <div className="flex space-x-4 sm:space-x-6 text-xs sm:text-sm">
-              <a href="/privacy" className="hover:text-white transition-colors">
+              <a className="hover:text-white transition-colors">
                 Privacy Policy
               </a>
-              <a href="/terms" className="hover:text-white transition-colors">
-                Terms of Use
-              </a>
+              <a className="hover:text-white transition-colors">Terms of Use</a>
             </div>
           </div>
         </div>

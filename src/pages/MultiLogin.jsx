@@ -323,21 +323,17 @@ const MultiLogin = () => {
             <div className="text-center md:text-left">
               <div className="flex items-center justify-center md:justify-start space-x-2 mb-2">
                 <i className="fas fa-envelope text-blue-400 text-xs sm:text-sm"></i>
-                <span className="text-xs sm:text-sm">
-                  support@valmodeliver.in
-                </span>
+                <span className="text-xs sm:text-sm"></span>
               </div>
               <p className="text-xs text-gray-400">
                 © 2025 Valmo. All rights reserved.
               </p>
             </div>
             <div className="flex space-x-4 sm:space-x-6 text-xs sm:text-sm">
-              <a href="/privacy" className="hover:text-white transition-colors">
+              <a className="hover:text-white transition-colors">
                 Privacy Policy
               </a>
-              <a href="/terms" className="hover:text-white transition-colors">
-                Terms of Use
-              </a>
+              <a className="hover:text-white transition-colors">Terms of Use</a>
             </div>
           </div>
         </div>

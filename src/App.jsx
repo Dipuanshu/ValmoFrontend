@@ -27,6 +27,7 @@ import AdminHome from "./pages/admin/AdminHome";
 import AgentDashboard from "./pages/agent/agent-dashboard";
 import AgentApplications from "./pages/agent/AgentApplications";
 import AdminReport from "./pages/admin/AdminReport";
+import HomeNew from "./pages/HomeNew";
 
 function App() {
   return (
@@ -50,6 +51,7 @@ function App() {
           <Route path="/terms-content" element={<TermsContent />} />
           <Route path="/track" element={<Track />} />
           <Route path="/form" element={<Form />} />
+          <Route path="/HomeNew" element={<HomeNew />} />
 
           {/* Admin Routes */}
           <Route path="/admin/admin-home" element={<AdminHome />} />
