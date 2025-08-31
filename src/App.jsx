@@ -75,8 +75,14 @@ function App() {
           <Route path="/admin/admin-report" element={<AdminReport />} />
 
           {/* Agent Routes */}
-          <Route path="/agent/agent-dashboard" element={<AgentDashboard />} />
-          <Route path="/agent-applications" element={<AgentApplications />} />
+          <Route
+            path="/agent/agent-dashboard/:agentName"
+            element={<AgentDashboard />}
+          />
+          <Route
+            path="/agent-applications/:agentId"
+            element={<AgentApplications />}
+          />
         </Routes>
       </div>
     </Router>

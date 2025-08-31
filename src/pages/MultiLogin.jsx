@@ -93,6 +93,7 @@ const MultiLogin = () => {
       });
 
       const result = await res.json();
+      console.log(result);
 
       if (result.success || res.ok) {
         showMessage("Login successful! Redirecting...", "success");
@@ -109,8 +110,10 @@ const MultiLogin = () => {
             navigate("/admin/admin-home");
           }, 1500);
         } else if (currentLoginType === "agent") {
+          // response me direct "name" aa raha hai
+          const agentName = result?.agentId || "agent";
           setTimeout(() => {
-            navigate("/agent/agent-dashboard");
+            navigate(`/agent/agent-dashboard/${agentName}`);
           }, 1500);
         }
       } else {

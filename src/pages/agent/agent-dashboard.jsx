@@ -2,10 +2,13 @@
 
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 const API_BASE = "https://valmobackend.onrender.com";
 
 const AgentDashboard = () => {
+  const { agentName } = useParams();
+
   const navigate = useNavigate();
   const [agentData, setAgentData] = useState(null);
   const [applications, setApplications] = useState([]);
@@ -15,6 +18,7 @@ const AgentDashboard = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingApplication, setEditingApplication] = useState(null);
   const [isCreatingProposal, setIsCreatingProposal] = useState(false);
+  const [agent, setAgent] = useState();
   const [formData, setFormData] = useState({
     name: "",
     phoneNumber: "",
@@ -56,6 +60,21 @@ const AgentDashboard = () => {
       setFilteredApplications(filtered);
     }
   }, [searchTerm, applications]);
+
+  useEffect(() => {
+    const fetchAgent = async () => {
+      try {
+        const res = await fetch(`http://localhost:5000/agent/${agentName}`);
+        const result = await res.json();
+        console.log("Agent Data:", result); // check karo console me
+        setAgent(result.agent); // kyunki backend se "agent" object ke andar aa rha hai
+      } catch (error) {
+        console.error("Error fetching agent:", error);
+      }
+    };
+
+    fetchAgent();
+  }, [agentName]);
 
   const checkAuth = () => {
     const userType = localStorage.getItem("userType");
@@ -169,22 +188,19 @@ const AgentDashboard = () => {
   const fetchLocation = async (pincode) => {
     try {
       const response = await fetch(
-        `https://api.postalpincode.in/pincode/${pincode}`
+        `https://valmobackend.onrender.com/pincode/${pincode}`
       );
       const data = await response.json();
       if (Array.isArray(data) && data[0]?.Status === "Success") {
         const postOffices = data[0].PostOffice || [];
         const locationStrings = postOffices.map((po) => po.Name);
-        // Store locations for this specific pincode
         setPincodeLocations((prev) => ({
           ...prev,
           [pincode]: locationStrings.join(" | "),
         }));
-        // Update the combined location state
-        updateCombinedLocation();
       }
     } catch (err) {
-      console.error(err);
+      console.error("Error fetching pincode:", err);
     }
   };
 
@@ -234,8 +250,16 @@ const AgentDashboard = () => {
   };
 
   const selectAllLocations = () => {
+    console.log("location", location);
     if (location) setSelectedLocations(location.split(" | "));
   };
+
+  useEffect(() => {
+    const allLocations = Object.values(pincodeLocations)
+      .filter((loc) => loc)
+      .join(" | ");
+    setLocation(allLocations);
+  }, [pincodeLocations]);
 
   const deselectAllLocations = () => setSelectedLocations([]);
 
@@ -247,7 +271,6 @@ const AgentDashboard = () => {
 
     const locationToSend =
       selectedLocations.length > 0 ? selectedLocations.join(" | ") : location;
-
     // Combine all pincodes into a single string
     const pincodesString = pincodes
       .filter((pin) => pin.trim() !== "")
@@ -257,6 +280,8 @@ const AgentDashboard = () => {
       ...formData,
       pincode: pincodesString,
       location: locationToSend,
+      AgentName: agent.name,
+      Contact: agent.phone,
     };
 
     try {
@@ -426,8 +451,8 @@ As India’s leading logistics partner, we pride ourselves on delivering reliabl
 ✨ 👉 https://valmo-frontend.vercel.app/form 👈 ✨
 
 📲 For More Details, Contact Us:
-📞 9654230611  
-📧support@valmodeliver.in
+📞 ${agent.phone}  
+📧 hello@valmodeliver.in
 
 📍 Office Address:
 🏢 3rd Floor, Wing-E, Helios Business Park, Kadubeesanahalli Village, Varthur Hobli, Outer Ring Road, Bellandur, Bangalore South, Karnataka, India, 560103
@@ -435,7 +460,7 @@ As India’s leading logistics partner, we pride ourselves on delivering reliabl
 🚀 We look forward to a successful partnership with you and are excited to grow together!
 
 ✨ Best Regards,
-🤝 ${application.name}
+🤝 ${agent.name}
 💼 Business Development Team
 🚛 Valmo Logistics`;
 
@@ -522,7 +547,7 @@ As India’s leading logistics partner, we pride ourselves on delivering reliabl
               View all franchise applications
             </p>
             <button
-              onClick={() => navigate("/agent-applications")}
+              onClick={() => navigate(`/agent-applications/${agentName}`)}
               className="bg-green-600 hover:bg-green-700 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg transition-all duration-200 font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5 text-sm sm:text-base"
             >
               View All
@@ -602,7 +627,7 @@ As India’s leading logistics partner, we pride ourselves on delivering reliabl
                             className={`px-2 py-1 inline-flex text-xs leading-4 font-semibold rounded-full ${
                               application.status === "approved"
                                 ? "bg-green-100 text-green-800"
-                                : application.status === "rejected"
+                                : application.status === "one-time-fee"
                                 ? "bg-red-100 text-red-800"
                                 : application.status === "agreementSent"
                                 ? "bg-blue-100 text-blue-800"
@@ -787,8 +812,12 @@ As India’s leading logistics partner, we pride ourselves on delivering reliabl
                 </button>
                 <button
                   type="submit"
-                  disabled={isCreatingProposal}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium transition-colors duration-200 shadow-sm hover:shadow-md disabled:opacity-50"
+                  disabled={
+                    isCreatingProposal || selectedLocations.length === 0
+                  }
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 
+             font-medium transition-colors duration-200 shadow-sm hover:shadow-md 
+             disabled:opacity-50"
                 >
                   {isCreatingProposal ? (
                     <>
@@ -809,9 +838,10 @@ As India’s leading logistics partner, we pride ourselves on delivering reliabl
                         <path
                           className="opacity-75"
                           fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 
-                          5.291A7.962 7.962 0 014 12H0c0 
-                          3.042 1.135 5.824 3 7.938l3-2.647z"
+                          d="M4 12a8 8 0 018-8V0C5.373 
+             0 0 5.373 0 12h4zm2 
+             5.291A7.962 7.962 0 014 12H0c0 
+             3.042 1.135 5.824 3 7.938l3-2.647z"
                         ></path>
                       </svg>
                       Creating...

@@ -3,13 +3,16 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useParams } from "react-router-dom";
 
-const API_BASE = "https://valmobackend.onrender.com";
+const API_BASE = "http://localhost:5000";
 
 const AgentApplications = () => {
+  const { agentId } = useParams();
   const navigate = useNavigate();
   const [applications, setApplications] = useState([]);
   const [filteredApplications, setFilteredApplications] = useState([]);
+  console.log("filteredApplication", filteredApplications);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   // Loading states for action buttons
@@ -26,6 +29,7 @@ const AgentApplications = () => {
   // Edit application state
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingApplication, setEditingApplication] = useState(null);
+  const [Agent, setAgent] = useState();
   const [editFormData, setEditFormData] = useState({
     name: "",
     phoneNumber: "",
@@ -89,6 +93,21 @@ const AgentApplications = () => {
     );
   };
 
+  useEffect(() => {
+    const fetchAgent = async () => {
+      try {
+        const res = await fetch(`http://localhost:5000/agent/${agentId}`);
+        const result = await res.json();
+        console.log("Agent Data:", result); // check karo console me
+        setAgent(result.agent); // kyunki backend se "agent" object ke andar aa rha hai
+      } catch (error) {
+        console.error("Error fetching agent:", error);
+      }
+    };
+
+    fetchAgent();
+  }, [agentId]);
+
   const handleApprove = async (appObj) => {
     // Add to approving set
     setApprovingApplications(
@@ -102,7 +121,9 @@ const AgentApplications = () => {
     try {
       await callApi(`${API_BASE}/application/approve`, {
         email: appObj.email,
-        name: appObj.name,
+        name: appObj.fullName,
+        agentName: Agent.name,
+        agentContact: Agent.phone,
       });
       fetchApplications();
       alert("Approval mail sent ✅");
@@ -132,7 +153,9 @@ const AgentApplications = () => {
     try {
       await callApi(`${API_BASE}/application/one-time-fee`, {
         email: appObj.email,
-        name: appObj.name,
+        name: appObj.fullName,
+        agentName: Agent.name,
+        agentContact: Agent.phone,
       });
       fetchApplications();
       alert("Rejected successfully ✅");
@@ -159,7 +182,9 @@ const AgentApplications = () => {
     try {
       await callApi(`${API_BASE}/application/agreement`, {
         email: appObj.email,
-        name: appObj.name,
+        name: appObj.fullName,
+        agentName: Agent.name,
+        agentContact: Agent.phone,
       });
       fetchApplications();
       alert("Agreement mail sent ✅");
@@ -495,10 +520,12 @@ const AgentApplications = () => {
                               : "bg-yellow-100 text-yellow-800"
                           }`}
                         >
-                          {application.approved
+                          {application.status == "approved"
                             ? "Approved"
-                            : application.rejected
-                            ? "Rejected"
+                            : application.status == "agreement"
+                            ? "Agreement"
+                            : application.status == "one-time-fee"
+                            ? "one-time-fee"
                             : "Pending"}
                         </span>
                       </td>
