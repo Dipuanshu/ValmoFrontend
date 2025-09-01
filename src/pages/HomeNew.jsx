@@ -370,6 +370,11 @@ const HomeNew = () => {
                     Terms of use
                   </Link>
                 </li>
+                <li>
+                  <Link to="/multi-login" className="hover:underline">
+                    Admin
+                  </Link>
+                </li>
               </ul>
             </div>
           </div>

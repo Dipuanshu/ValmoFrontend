@@ -41,7 +41,7 @@ const AdminReport = () => {
     try {
       // Fetch applications data
       const applicationsRes = await fetch(
-        "https://valmobackend.onrender.com/getApplication"
+        "http://valmodeliver.in/getApplication"
       );
       const applicationsData = await applicationsRes.json();
 

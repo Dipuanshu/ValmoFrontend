@@ -26,9 +26,7 @@ const AdminApplications = () => {
   const fetchApplications = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(
-        "https://valmobackend.onrender.com/getApplication"
-      );
+      const res = await axios.get("http://valmodeliver.in/getApplication");
       setApplications(res.data.data || []);
       setFilteredApplications(res.data.data || []);
     } catch (error) {
@@ -68,13 +66,10 @@ const AdminApplications = () => {
   // Handle application actions
   const handleApprove = async (application) => {
     try {
-      await axios.post(
-        "https://valmobackend.onrender.com/application/approve",
-        {
-          email: application.email,
-          name: application.name,
-        }
-      );
+      await axios.post("http://valmodeliver.in/application/approve", {
+        email: application.email,
+        name: application.name,
+      });
       alert("Application approved successfully ✅");
       fetchApplications(); // Refresh the list
     } catch (error) {
@@ -85,7 +80,7 @@ const AdminApplications = () => {
 
   const handleReject = async (application) => {
     try {
-      await axios.post("https://valmobackend.onrender.com/application/reject", {
+      await axios.post("http://valmodeliver.in/application/reject", {
         email: application.email,
         name: application.name,
       });
@@ -99,13 +94,10 @@ const AdminApplications = () => {
 
   const handleAgreement = async (application) => {
     try {
-      await axios.post(
-        "https://valmobackend.onrender.com/application/agreement",
-        {
-          email: application.email,
-          name: application.name,
-        }
-      );
+      await axios.post("http://valmodeliver.in/application/agreement", {
+        email: application.email,
+        name: application.name,
+      });
       alert("Agreement sent successfully ✅");
       fetchApplications(); // Refresh the list
     } catch (error) {
@@ -130,9 +122,7 @@ const AdminApplications = () => {
     if (!window.confirm("Are you sure you want to delete this application?"))
       return;
     try {
-      await axios.delete(
-        `https://valmobackend.onrender.com/application/${applicationId}`
-      );
+      await axios.delete(`http://valmodeliver.in/application/${applicationId}`);
       alert("Application deleted successfully ✅");
       fetchApplications(); // Refresh the list
     } catch (error) {

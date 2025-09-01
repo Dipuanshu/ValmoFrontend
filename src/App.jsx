@@ -34,7 +34,7 @@ function App() {
     <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <div className="App">
         <Routes>
-          <Route path="/" element={<HomePage />} />
+          <Route path="/" element={<HomeNew />} />
           <Route path="/multi-login" element={<MultiLogin />} />
           <Route path="/customer-login" element={<CustomerLogin />} />
           <Route path="/client-login" element={<CustomerLogin />} />

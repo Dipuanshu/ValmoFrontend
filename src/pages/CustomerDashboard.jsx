@@ -56,7 +56,7 @@ const CustomerDashboard = () => {
   const loadApplicationDetails = async () => {
     try {
       const response = await fetch(
-        `https://valmobackend.onrender.com/getApplication/email/${email}`
+        `http://valmodeliver.in/getApplication/email/${email}`
       );
       const result = await response.json();
 
@@ -77,7 +77,7 @@ const CustomerDashboard = () => {
 
   useEffect(() => {
     axios
-      .get(`https://valmobackend.onrender.com/getApplication/${email}`)
+      .get(`http://valmodeliver.in/getApplication/${email}`)
       .then((res) => {
         setStatus(res.data);
       })
@@ -88,7 +88,7 @@ const CustomerDashboard = () => {
 
   useEffect(() => {
     axios
-      .get(`https://valmobackend.onrender.com/getAssignedBank/${email}`)
+      .get(`http://valmodeliver.in/getAssignedBank/${email}`)
       .then((res) => {
         if (res.data.success && res.data.bankDetails) {
           setBank(res.data.bankDetails); // ab Bank me object aayega

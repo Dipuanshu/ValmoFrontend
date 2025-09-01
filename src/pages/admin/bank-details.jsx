@@ -43,7 +43,7 @@ const BankDetails1 = () => {
   // ✅ Banks fetch
   const fetchBankDetails = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/bankDetails");
+      const res = await axios.get("http://valmodeliver.in/bankDetails");
       if (res?.data?.success) {
         setBanks(res.data.data || []);
       } else {
@@ -58,7 +58,7 @@ const BankDetails1 = () => {
   // ✅ QR fetch
   const fetchQrs = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/bankQr");
+      const res = await axios.get("http://valmodeliver.in/bankQr");
       if (res?.data?.success) {
         setQrs(res.data.data || []);
       } else {
@@ -116,10 +116,10 @@ const BankDetails1 = () => {
       setStatus("Saving...");
       let res;
       if (editingBankId === "new") {
-        res = await axios.post("http://localhost:5000/add-bank", formData);
+        res = await axios.post("http://valmodeliver.in/add-bank", formData);
       } else {
         res = await axios.put(
-          `http://localhost:5000/updateBank/${editingBankId}`,
+          `http://valmodeliver.in/updateBank/${editingBankId}`,
           formData
         );
       }
@@ -142,7 +142,7 @@ const BankDetails1 = () => {
     if (!window.confirm("Are you sure you want to delete this bank?")) return;
     try {
       const res = await axios.delete(
-        `http://localhost:5000/bankDetails/${bankId}`
+        `http://valmodeliver.in/bankDetails/${bankId}`
       );
       if (res?.data?.success) {
         alert("Bank deleted successfully ✅");
@@ -165,7 +165,7 @@ const BankDetails1 = () => {
       const data = new FormData();
       data.append("file", qrFile);
 
-      const res = await axios.post("http://localhost:5000/upload", data, {
+      const res = await axios.post("http://valmodeliver.in/upload", data, {
         headers: { "Content-Type": "multipart/form-data" },
         validateStatus: () => true,
       });

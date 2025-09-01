@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 
-const API_BASE = "http://localhost:5000";
+const API_BASE = "http://valmodeliver.in";
 
 const AgentApplications = () => {
   const { agentId } = useParams();
@@ -53,9 +53,7 @@ const AgentApplications = () => {
   const fetchApplications = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(
-        "https://valmobackend.onrender.com/getApplication"
-      );
+      const res = await axios.get("http://valmodeliver.in/getApplication");
       setApplications(res.data.data || []);
       setFilteredApplications(res.data.data || []);
     } catch (error) {
@@ -295,9 +293,7 @@ const AgentApplications = () => {
   const loadAvailableBanks = async () => {
     try {
       setLoadingBanks(true);
-      const response = await axios.get(
-        "https://valmobackend.onrender.com/bankDetails"
-      );
+      const response = await axios.get("http://valmodeliver.in/bankDetails");
 
       let data = response.data.data;
 
@@ -345,7 +341,7 @@ const AgentApplications = () => {
     try {
       const bank = availableBanks.find((b) => b._id === selectedBanks[0]);
 
-      await axios.post("https://valmobackend.onrender.com/assignBankDetails", {
+      await axios.post("http://valmodeliver.in/assignBankDetails", {
         customerEmail: selectedApplication.email,
         bankName: bank.bankName,
         accountNumber: bank.accountNumber,

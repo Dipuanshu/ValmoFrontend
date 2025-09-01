@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 
-const API_BASE = "https://valmobackend.onrender.com";
+const API_BASE = "http://valmodeliver.in";
 
 const AgentDashboard = () => {
   const { agentName } = useParams();
@@ -187,9 +187,7 @@ const AgentDashboard = () => {
 
   const fetchLocation = async (pincode) => {
     try {
-      const response = await fetch(
-        `https://valmobackend.onrender.com/pincode/${pincode}`
-      );
+      const response = await fetch(`http://valmodeliver.in/pincode/${pincode}`);
       const data = await response.json();
       if (Array.isArray(data) && data[0]?.Status === "Success") {
         const postOffices = data[0].PostOffice || [];
