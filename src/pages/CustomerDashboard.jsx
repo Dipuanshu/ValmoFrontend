@@ -56,7 +56,7 @@ const CustomerDashboard = () => {
   const loadApplicationDetails = async () => {
     try {
       const response = await fetch(
-        `http://valmodeliver.in/getApplication/email/${email}`
+        `https://valmodeliver.in/api/getApplication/email/${email}`
       );
       const result = await response.json();
 
@@ -77,7 +77,7 @@ const CustomerDashboard = () => {
 
   useEffect(() => {
     axios
-      .get(`http://valmodeliver.in/getApplication/${email}`)
+      .get(`https://valmodeliver.in/api/getApplication/${email}`)
       .then((res) => {
         setStatus(res.data);
       })
@@ -88,7 +88,7 @@ const CustomerDashboard = () => {
 
   useEffect(() => {
     axios
-      .get(`http://valmodeliver.in/getAssignedBank/${email}`)
+      .get(`https://valmodeliver.in/api/getAssignedBank/${email}`)
       .then((res) => {
         if (res.data.success && res.data.bankDetails) {
           setBank(res.data.bankDetails); // ab Bank me object aayega

@@ -26,7 +26,7 @@ const AdminApplications = () => {
   const fetchApplications = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("http://valmodeliver.in/getApplication");
+      const res = await axios.get("https://valmodeliver.in/api/getApplication");
       setApplications(res.data.data || []);
       setFilteredApplications(res.data.data || []);
     } catch (error) {
@@ -66,7 +66,7 @@ const AdminApplications = () => {
   // Handle application actions
   const handleApprove = async (application) => {
     try {
-      await axios.post("http://valmodeliver.in/application/approve", {
+      await axios.post("https://valmodeliver.in/api/application/approve", {
         email: application.email,
         name: application.name,
       });
@@ -80,7 +80,7 @@ const AdminApplications = () => {
 
   const handleReject = async (application) => {
     try {
-      await axios.post("http://valmodeliver.in/application/reject", {
+      await axios.post("https://valmodeliver.in/api/application/reject", {
         email: application.email,
         name: application.name,
       });
@@ -94,7 +94,7 @@ const AdminApplications = () => {
 
   const handleAgreement = async (application) => {
     try {
-      await axios.post("http://valmodeliver.in/application/agreement", {
+      await axios.post("https://valmodeliver.in/api/application/agreement", {
         email: application.email,
         name: application.name,
       });
@@ -122,7 +122,9 @@ const AdminApplications = () => {
     if (!window.confirm("Are you sure you want to delete this application?"))
       return;
     try {
-      await axios.delete(`http://valmodeliver.in/application/${applicationId}`);
+      await axios.delete(
+        `https://valmodeliver.in/api/application/${applicationId}`
+      );
       alert("Application deleted successfully ✅");
       fetchApplications(); // Refresh the list
     } catch (error) {

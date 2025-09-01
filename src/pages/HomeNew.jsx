@@ -2,6 +2,7 @@
 import React, { useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { HiMenu, HiX } from "react-icons/hi";
+import { MdEmail } from "react-icons/md";
 
 const HomeNew = () => {
   const navigate = useNavigate();
@@ -45,6 +46,12 @@ const HomeNew = () => {
             Track Order
           </li>
           <li
+            onClick={() => navigate("/client-login")}
+            className="cursor-pointer"
+          >
+            Client Login
+          </li>
+          <li
             onClick={() => scrollToSection(aboutRef)}
             className="hover:text-blue-300 cursor-pointer"
           >
@@ -55,12 +62,6 @@ const HomeNew = () => {
             className="hover:text-blue-300 cursor-pointer"
           >
             Contact Us
-          </li>
-          <li
-            onClick={() => navigate("/client-login")}
-            className="cursor-pointer"
-          >
-            Customer Dashboard
           </li>
         </ul>
 
@@ -134,7 +135,7 @@ const HomeNew = () => {
           {/* Right side image */}
           <div className="w-full md:w-1/2 h-[400px]">
             <img
-              src="https://www.valmo.in/static-assets/valmo-web/valmo-delivery.jpg?w=1920"
+              src="/images/valmo-deliveryBoy.jpg"
               alt="Delivery Boy"
               className="object-cover w-full h-full"
             />
@@ -202,7 +203,7 @@ const HomeNew = () => {
             {/* Image Card */}
             <div className="w-full md:w-1/2 bg-white rounded-xl shadow-md p-4">
               <img
-                src="https://www.valmo.in/static-assets/valmo-web/valmo-delivery-to-customer.jpg?w=640"
+                src="/images/valmo-delivery-to-customer.jpg"
                 alt="Valmo Pilot"
                 className="rounded-xl w-full h-auto object-cover"
               />
@@ -272,7 +273,7 @@ const HomeNew = () => {
             {/* Image Card */}
             <div className="w-full md:w-1/2 bg-white rounded-xl shadow-md p-4">
               <img
-                src="https://www.valmo.in/static-assets/valmo-web/valmo-delivery-group.jpg?w=640"
+                src="/images/valmo-delivery-group.jpg"
                 alt="Valmo Delivery Hub"
                 className="rounded-xl w-full h-auto object-cover"
               />
@@ -334,21 +335,8 @@ const HomeNew = () => {
                 </div>
 
                 {/* Email */}
-                <div className="flex items-center text-sm text-gray-200">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4 mr-2"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M16 12H8m0 0l4-4m-4 4l4 4"
-                    />
-                  </svg>
+                <div className="flex items-center text-sm text-gray-200 gap-2.5">
+                  <MdEmail />
                   <span>hello@valmodeliver.in</span>
                 </div>
               </div>
@@ -370,11 +358,6 @@ const HomeNew = () => {
                     Terms of use
                   </Link>
                 </li>
-                <li>
-                  <Link to="/multi-login" className="hover:underline">
-                    Admin
-                  </Link>
-                </li>
               </ul>
             </div>
           </div>
@@ -384,9 +367,9 @@ const HomeNew = () => {
             <p className="italic">
               Disclaimer: Any official communication for business related
               formalities will be sent by Valmo using our authorised official
-              email addresses (@hello@valmodeliver.in or @meesho.com). Kindly DO
-              NOT interact with any communications or requests for payments from
-              any other sources or share any personal information.
+              email addresses (@valmodeliver.in or @meesho.com). Kindly DO NOT
+              interact with any communications or requests for payments from any
+              other sources or share any personal information.
             </p>
             <p className="mt-4">
               &copy; Copyright © 2024. All rights reserved.

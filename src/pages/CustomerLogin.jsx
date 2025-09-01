@@ -41,7 +41,7 @@ const CustomerLogin = () => {
     try {
       // Updated: Now using customerId in API call
       const response = await fetch(
-        `http://valmodeliver.in/customer/credentials?customerId=${userId}`
+        `https://valmodeliver.in/api/customer/credentials?customerId=${userId}`
       );
       const data = await response.json();
 

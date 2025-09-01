@@ -32,7 +32,7 @@ const AdminAgentManagement = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post("http://valmodeliver.in/agents", formData);
+      await axios.post("https://valmodeliver.in/api/agents", formData);
       alert("Agent created successfully ✅");
       setFormData({
         name: "",
@@ -50,7 +50,7 @@ const AdminAgentManagement = () => {
 
   const fetchAgents = async () => {
     try {
-      const res = await axios.get("http://valmodeliver.in/agents");
+      const res = await axios.get("https://valmodeliver.in/api/agents");
       setAgents(res.data);
     } catch (error) {
       console.error("Error fetching agents:", error);
@@ -67,7 +67,7 @@ const AdminAgentManagement = () => {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this agent?")) return;
     try {
-      await axios.delete(`http://valmodeliver.in/agents/${id}`);
+      await axios.delete(`https://valmodeliver.in/api/agents/${id}`);
       alert("Agent deleted successfully ✅");
       fetchAgents();
     } catch (error) {

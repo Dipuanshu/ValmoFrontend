@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 
-const API_BASE = "http://valmodeliver.in";
+const API_BASE = "https://valmodeliver.in/api";
 
 const AgentDashboard = () => {
   const { agentName } = useParams();
@@ -64,9 +64,10 @@ const AgentDashboard = () => {
   useEffect(() => {
     const fetchAgent = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/agent/${agentName}`);
-        const result = await res.json();
-        console.log("Agent Data:", result); // check karo console me
+        const res = await fetch(
+          `https://valmodeliver.in/api/agent/${agentName}`
+        );
+        const result = await res.json(); // check karo console me
         setAgent(result.agent); // kyunki backend se "agent" object ke andar aa rha hai
       } catch (error) {
         console.error("Error fetching agent:", error);
@@ -187,7 +188,9 @@ const AgentDashboard = () => {
 
   const fetchLocation = async (pincode) => {
     try {
-      const response = await fetch(`http://valmodeliver.in/pincode/${pincode}`);
+      const response = await fetch(
+        `https://valmodeliver.in/api/pincode/${pincode}`
+      );
       const data = await response.json();
       if (Array.isArray(data) && data[0]?.Status === "Success") {
         const postOffices = data[0].PostOffice || [];
@@ -248,7 +251,6 @@ const AgentDashboard = () => {
   };
 
   const selectAllLocations = () => {
-    console.log("location", location);
     if (location) setSelectedLocations(location.split(" | "));
   };
 
@@ -297,6 +299,7 @@ const AgentDashboard = () => {
         setLocation("");
         setSelectedLocations([]);
         setIsModalOpen(false);
+        loadApplications();
       } else {
         const err = await response.json().catch(() => ({}));
         alert("Error: " + (err.message || "Failed"));
@@ -664,10 +667,12 @@ As India’s leading logistics partner, we pride ourselves on delivering reliabl
       </main>
 
       {/* Create Proposal Modal */}
+      {/* Create Proposal Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
-            <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md h-[90vh] flex flex-col">
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center flex-shrink-0">
               <h3 className="text-lg font-semibold text-gray-900">
                 Create Proposal
               </h3>
@@ -689,118 +694,122 @@ As India’s leading logistics partner, we pride ourselves on delivering reliabl
                 <i className="fas fa-times"></i>
               </button>
             </div>
-            <form onSubmit={handleSubmit}>
-              <div className="px-6 py-4 space-y-4">
-                <div className="px-6 py-4 space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Name
-                    </label>
-                    <input
-                      type="text"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Phone Number
-                    </label>
-                    <input
-                      type="tel"
-                      name="phoneNumber"
-                      value={formData.phoneNumber}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Email
-                    </label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Pincodes
-                    </label>
-                    {pincodes.map((pincode, index) => (
-                      <div key={index} className="flex items-center mb-2">
-                        <input
-                          type="text"
-                          value={pincode}
-                          onChange={(e) =>
-                            handlePincodeChange(index, e.target.value)
-                          }
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          placeholder={`Pincode ${index + 1}`}
-                        />
-                        {index === pincodes.length - 1 && (
-                          <button
-                            type="button"
-                            onClick={addPincodeField}
-                            className="ml-2 bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-md"
-                          >
-                            <i className="fas fa-plus"></i>
-                          </button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                  {location && (
-                    <div>
-                      <div className="flex justify-between items-center mb-1">
-                        <label className="block text-sm font-medium text-gray-700">
-                          Areas ({location.split(" | ").length} total)
-                        </label>
-                        <div className="space-x-2">
-                          <button
-                            type="button"
-                            onClick={selectAllLocations}
-                            className="text-xs bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded"
-                          >
-                            Select All
-                          </button>
-                        </div>
-                      </div>
-                      <div className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 max-h-40 overflow-y-auto">
-                        <div className="grid grid-cols-2 gap-1">
-                          {location.split(" | ").map((area, index) => (
-                            <div
-                              key={index}
-                              className={`py-1 text-sm cursor-pointer rounded px-2 ${
-                                selectedLocations.includes(area)
-                                  ? "bg-blue-500 text-white"
-                                  : "hover:bg-gray-200"
-                              }`}
-                              onClick={() => toggleLocationSelection(area)}
-                            >
-                              {area}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                      {selectedLocations.length > 0 && (
-                        <div className="mt-2 text-sm text-gray-600">
-                          Selected: {selectedLocations.length} area(s)
-                        </div>
+
+            {/* Form */}
+            <form
+              onSubmit={handleSubmit}
+              className="flex flex-col flex-1 overflow-hidden"
+            >
+              {/* Scrollable Content */}
+              <div className="px-6 py-4 space-y-4 flex-1 overflow-y-auto">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Name
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    name="phoneNumber"
+                    value={formData.phoneNumber}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Pincodes
+                  </label>
+                  {pincodes.map((pincode, index) => (
+                    <div key={index} className="flex items-center mb-2">
+                      <input
+                        type="text"
+                        value={pincode}
+                        onChange={(e) =>
+                          handlePincodeChange(index, e.target.value)
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder={`Pincode ${index + 1}`}
+                      />
+                      {index === pincodes.length - 1 && (
+                        <button
+                          type="button"
+                          onClick={addPincodeField}
+                          className="ml-2 bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-md"
+                        >
+                          <i className="fas fa-plus"></i>
+                        </button>
                       )}
                     </div>
-                  )}
+                  ))}
                 </div>
+                {location && (
+                  <div>
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Areas ({location.split(" | ").length} total)
+                      </label>
+                      <button
+                        type="button"
+                        onClick={selectAllLocations}
+                        className="text-xs bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded"
+                      >
+                        Select All
+                      </button>
+                    </div>
+                    <div className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 max-h-40 overflow-y-auto">
+                      <div className="grid grid-cols-2 gap-1">
+                        {location.split(" | ").map((area, index) => (
+                          <div
+                            key={index}
+                            className={`py-1 text-sm cursor-pointer rounded px-2 ${
+                              selectedLocations.includes(area)
+                                ? "bg-blue-500 text-white"
+                                : "hover:bg-gray-200"
+                            }`}
+                            onClick={() => toggleLocationSelection(area)}
+                          >
+                            {area}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    {selectedLocations.length > 0 && (
+                      <div className="mt-2 text-sm text-gray-600">
+                        Selected: {selectedLocations.length} area(s)
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
-              <div className="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+
+              {/* Sticky Footer */}
+              <div className="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3 bg-white flex-shrink-0 sticky bottom-0">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
@@ -813,9 +822,7 @@ As India’s leading logistics partner, we pride ourselves on delivering reliabl
                   disabled={
                     isCreatingProposal || selectedLocations.length === 0
                   }
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 
-             font-medium transition-colors duration-200 shadow-sm hover:shadow-md 
-             disabled:opacity-50"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium transition-colors duration-200 shadow-sm hover:shadow-md disabled:opacity-50"
                 >
                   {isCreatingProposal ? (
                     <>
@@ -837,9 +844,9 @@ As India’s leading logistics partner, we pride ourselves on delivering reliabl
                           className="opacity-75"
                           fill="currentColor"
                           d="M4 12a8 8 0 018-8V0C5.373 
-             0 0 5.373 0 12h4zm2 
-             5.291A7.962 7.962 0 014 12H0c0 
-             3.042 1.135 5.824 3 7.938l3-2.647z"
+                       0 0 5.373 0 12h4zm2 
+                       5.291A7.962 7.962 0 014 12H0c0 
+                       3.042 1.135 5.824 3 7.938l3-2.647z"
                         ></path>
                       </svg>
                       Creating...
@@ -857,8 +864,9 @@ As India’s leading logistics partner, we pride ourselves on delivering reliabl
       {/* Edit Application Modal */}
       {isEditModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
-            <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md h-[90vh] flex flex-col">
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center flex-shrink-0">
               <h3 className="text-lg font-semibold text-gray-900">
                 Edit Application
               </h3>
@@ -869,8 +877,15 @@ As India’s leading logistics partner, we pride ourselves on delivering reliabl
                 <i className="fas fa-times"></i>
               </button>
             </div>
-            <form onSubmit={handleEditSubmit}>
-              <div className="px-6 py-4 space-y-4">
+
+            {/* Form */}
+            <form
+              onSubmit={handleEditSubmit}
+              className="flex flex-col flex-1 overflow-hidden"
+            >
+              {/* Scrollable Content */}
+              <div className="px-6 py-4 space-y-4 overflow-y-auto flex-1">
+                {/* Name */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Name
@@ -884,6 +899,8 @@ As India’s leading logistics partner, we pride ourselves on delivering reliabl
                     required
                   />
                 </div>
+
+                {/* Phone */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Phone Number
@@ -897,6 +914,8 @@ As India’s leading logistics partner, we pride ourselves on delivering reliabl
                     required
                   />
                 </div>
+
+                {/* Email */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Email
@@ -910,6 +929,8 @@ As India’s leading logistics partner, we pride ourselves on delivering reliabl
                     required
                   />
                 </div>
+
+                {/* Pincode */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Pincode
@@ -923,6 +944,8 @@ As India’s leading logistics partner, we pride ourselves on delivering reliabl
                     required
                   />
                 </div>
+
+                {/* Areas */}
                 {editLocation && (
                   <div>
                     <div className="flex justify-between items-center mb-1">
@@ -964,7 +987,9 @@ As India’s leading logistics partner, we pride ourselves on delivering reliabl
                   </div>
                 )}
               </div>
-              <div className="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+
+              {/* Sticky Footer */}
+              <div className="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3 bg-white flex-shrink-0">
                 <button
                   type="button"
                   onClick={() => setIsEditModalOpen(false)}

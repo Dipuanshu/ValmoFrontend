@@ -735,10 +735,13 @@ const Form = () => {
       }
 
       // ---- Submit to the API ----
-      const response = await fetch("http://valmodeliver.in/createApplication", {
-        method: "POST",
-        body: formDataToSend, // no Content-Type header (browser sets it)
-      });
+      const response = await fetch(
+        "https://valmodeliver.in/api/createApplication",
+        {
+          method: "POST",
+          body: formDataToSend, // no Content-Type header (browser sets it)
+        }
+      );
 
       const result = await response.json();
 

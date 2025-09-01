@@ -45,7 +45,7 @@ const AdminHome = () => {
 
   const fetchApplications = async () => {
     try {
-      const res = await fetch("http://valmodeliver.in/getApplication");
+      const res = await fetch("https://valmodeliver.in/api/getApplication");
       const data = await res.json();
 
       if (data.success) {
