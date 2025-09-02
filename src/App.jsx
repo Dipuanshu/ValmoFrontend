@@ -28,6 +28,7 @@ import AgentDashboard from "./pages/agent/agent-dashboard";
 import AgentApplications from "./pages/agent/AgentApplications";
 import AdminReport from "./pages/admin/AdminReport";
 import HomeNew from "./pages/HomeNew";
+import EditApplication from "./pages/admin/EditApplication";
 
 function App() {
   return (
@@ -44,6 +45,10 @@ function App() {
           />
 
           <Route path="/view-application" element={<ViewApplication />} />
+          <Route
+            path="/edit-application/:email"
+            element={<EditApplication />}
+          />
           <Route path="/about" element={<About />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/privacy-content" element={<PrivacyContent />} />

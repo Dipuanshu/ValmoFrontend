@@ -25,6 +25,7 @@ const AgentApplications = () => {
   const [availableBanks, setAvailableBanks] = useState();
   console.log("avilable", availableBanks);
   const [selectedBanks, setSelectedBanks] = useState([]);
+  const [qrCode, setQrCode] = useState("");
   const [loadingBanks, setLoadingBanks] = useState(false);
   // Edit application state
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -94,7 +95,9 @@ const AgentApplications = () => {
   useEffect(() => {
     const fetchAgent = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/agent/${agentId}`);
+        const res = await fetch(
+          `https://valmodeliver.in/api//agent/${agentId}`
+        );
         const result = await res.json();
         console.log("Agent Data:", result); // check karo console me
         setAgent(result.agent); // kyunki backend se "agent" object ke andar aa rha hai
@@ -223,18 +226,7 @@ const AgentApplications = () => {
 
   // Edit Application
   const handleEditApplication = (application) => {
-    setEditingApplication(application);
-    setEditFormData({
-      name: application.fullName || "",
-      phoneNumber: application.mobileNumber || "",
-      email: application.email || "",
-      pincode: application.residentialPinCode || "",
-    });
-    if (application.residentialPinCode)
-      fetchEditLocation(application.residentialPinCode);
-    else setEditLocation("");
-    setEditSelectedLocations([]);
-    setIsEditModalOpen(true);
+    navigate(`/edit-application/${encodeURIComponent(application)}`);
   };
 
   const handleEditSubmit = async (e) => {
@@ -335,30 +327,73 @@ const AgentApplications = () => {
   };
 
   const handleAssignBanks = async () => {
-    if (selectedBanks.length === 0) {
-      alert("Please select at least one bank option");
-      return;
-    }
-
     try {
-      const bank = availableBanks.find((b) => b._id === selectedBanks[0]);
+      // ✅ Case 1: QR Code selected
+      if (selectedBanks.includes("qr_code")) {
+        const qrRes = await fetch(`${API_BASE}/bankQr`);
+        const qrData = await qrRes.json();
 
-      await axios.post("https://valmodeliver.in/api/assignBankDetails", {
-        customerEmail: selectedApplication.email,
-        bankName: bank.bankName,
-        accountNumber: bank.accountNumber,
-        ifscCode: bank.ifscCode,
-        bankBranch: bank.branchName,
-        accountHolderName: bank.accountHolderName,
-        qrCode: bank.qrCode,
-      });
+        const qrCodeValue = qrData?.data?.[0]?.qrCode;
 
-      alert("Bank details assigned successfully! ✅");
-      setIsBankModalOpen(false);
-      fetchApplications();
-    } catch (error) {
-      console.error("Error assigning bank details:", error);
-      alert("Failed to assign bank details ❌");
+        if (qrRes.ok && qrCodeValue) {
+          const res = await fetch(`${API_BASE}/assignBankDetails`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              customerEmail: selectedApplication.email, // required
+              bankName: "", // dummy name
+              accountNumber: "",
+              ifscCode: "",
+              bankBranch: "",
+              accountHolderName: "",
+              qrCode: qrCodeValue, // qr code link
+            }),
+          });
+
+          const data = await res.json();
+          if (res.ok && data.success) {
+            alert("✅ QR code assigned successfully!");
+            setIsBankModalOpen(false);
+          } else {
+            alert("❌ Failed: " + (data.message || "Error"));
+          }
+        } else {
+          alert("⚠️ QR Code not found in API response");
+        }
+      } else {
+        // ✅ Case 2: Banks selected
+        const banksToAssign = availableBanks.filter((b) =>
+          selectedBanks.includes(b._id)
+        );
+
+        for (const bank of banksToAssign) {
+          const res = await fetch(`${API_BASE}/assignBankDetails`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              customerEmail: selectedApplication.email, // required
+              bankName: bank.bankName,
+              accountNumber: bank.accountNumber,
+              ifscCode: bank.ifscCode,
+              bankBranch: bank.bankBranch || "",
+              accountHolderName: bank.accountHolderName,
+              qrCode: "", // bank details case -> qr empty
+            }),
+          });
+
+          const data = await res.json();
+          if (!res.ok || !data.success) {
+            alert("❌ Failed to assign " + bank.bankName);
+            return;
+          }
+        }
+
+        alert("✅ Bank(s) assigned successfully!");
+        setIsBankModalOpen(false);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("⚠️ Something went wrong while assigning");
     }
   };
 
@@ -545,7 +580,9 @@ const AgentApplications = () => {
                           </button>
 
                           <button
-                            onClick={() => handleEditApplication(application)}
+                            onClick={() =>
+                              handleEditApplication(application.email)
+                            }
                             className="text-yellow-600 hover:text-yellow-900 bg-gray-100 hover:bg-gray-200 p-1.5 sm:p-2 rounded-full transition-all duration-200 shadow-sm hover:shadow-md"
                             title="Edit Application"
                           >

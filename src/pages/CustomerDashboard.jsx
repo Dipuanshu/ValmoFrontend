@@ -489,14 +489,12 @@ const CustomerDashboard = () => {
                             : "bg-yellow-100 text-yellow-800"
                         }`}
                       >
-                        {applicationDetails.approved
+                        {applicationDetails.status == "approved"
                           ? "Approved"
-                          : applicationDetails.rejected
-                          ? "Rejected"
-                          : applicationDetails.oneTimeFeePaid
+                          : applicationDetails.status == "agreement"
+                          ? "Agreement"
+                          : applicationDetails.status == "one-time-fee"
                           ? "One Time Fee Paid"
-                          : applicationDetails.agreementSent
-                          ? "Agreement Sent"
                           : "Pending"}
                       </span>
                     </div>
@@ -586,7 +584,8 @@ const CustomerDashboard = () => {
 
       {showPaymentModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white max-w-md w-full p-8 rounded-2xl shadow-2xl relative">
+          <div className="bg-white w-full max-w-md sm:max-w-lg p-6 sm:p-8 rounded-2xl shadow-2xl relative overflow-y-auto max-h-[90vh]">
+            {/* Close Button */}
             <button
               onClick={closeModal}
               className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 p-2 rounded-full transition-all duration-200 shadow-sm hover:shadow-md"
@@ -594,72 +593,74 @@ const CustomerDashboard = () => {
               <i className="fas fa-times text-xl"></i>
             </button>
 
-            {/* QR Code ya Bank Details */}
+            {/* Payment / QR or Bank Section */}
             {Bank?.qrCode ? (
               <>
                 {/* Offer Section */}
-                {status.data.status === "approved" ? (
-                  <div className="bg-gray-50 p-4 rounded-xl shadow-sm space-y-2 text-sm text-gray-800 inline-block text-left">
-                    <p>
-                      📝 Kindly pay your booking fee of <strong>₹18,600</strong>
-                      .
-                    </p>
-                    <p>
-                      🔥 <strong>Offer:</strong> If you pay through PhonePe, pay
-                      only{" "}
-                      <span className="text-green-600 font-semibold">
-                        ₹16,999
-                      </span>
-                      !
-                    </p>
-                    <p>
-                      💸 Save{" "}
-                      <span className="font-semibold text-green-600">
-                        ₹1,601
-                      </span>{" "}
-                      by choosing PhonePe!
-                    </p>
-                    <p>📱 PhonePe = ₹16,999</p>
-                    <p>💳 Other = ₹18,600</p>
-                    <p className="text-red-600 font-medium">
-                      ⏳ Hurry! Limited time offer.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="bg-gray-50 p-4 rounded-xl shadow-sm space-y-2 text-sm text-gray-800 inline-block text-left">
-                    <p>
-                      📝 Kindly pay your Agreement Fee of{" "}
-                      <strong>₹90,100</strong>.
-                    </p>
-                    <p>
-                      🔥 <strong>Offer:</strong> If you pay through PhonePe, pay
-                      only{" "}
-                      <span className="text-green-600 font-semibold">
-                        ₹88,500
-                      </span>
-                      !
-                    </p>
-                    <p>
-                      💸 Save{" "}
-                      <span className="font-semibold text-green-600">
-                        ₹1,600
-                      </span>{" "}
-                      by choosing PhonePe as your payment method!
-                    </p>
-                    <div className="border-t border-gray-300 pt-2 space-y-1">
-                      <p className="font-semibold">📌 Payment Details:</p>
-                      <p>💼 Regular Fee = ₹90,100</p>
-                      <p>📱 PhonePe Payment = ₹88,500</p>
-                    </div>
-                    <p className="text-red-600 font-medium">
-                      ⏳ Hurry! Limited Time Offer
-                    </p>
-                  </div>
-                )}
+                <div className="bg-gray-50 p-4 rounded-xl shadow-sm space-y-2 text-sm text-gray-800 inline-block text-left w-full">
+                  {status.data.status === "approved" ? (
+                    <>
+                      <p>
+                        📝 Kindly pay your booking fee of{" "}
+                        <strong>₹18,600</strong>.
+                      </p>
+                      <p>
+                        🔥 <strong>Offer:</strong> If you pay through PhonePe,
+                        pay only{" "}
+                        <span className="text-green-600 font-semibold">
+                          ₹16,999
+                        </span>
+                        !
+                      </p>
+                      <p>
+                        💸 Save{" "}
+                        <span className="font-semibold text-green-600">
+                          ₹1,601
+                        </span>{" "}
+                        by choosing PhonePe!
+                      </p>
+                      <p>📱 PhonePe = ₹16,999</p>
+                      <p>💳 Other = ₹18,600</p>
+                      <p className="text-red-600 font-medium">
+                        ⏳ Hurry! Limited time offer.
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p>
+                        📝 Kindly pay your Agreement Fee of{" "}
+                        <strong>₹90,100</strong>.
+                      </p>
+                      <p>
+                        🔥 <strong>Offer:</strong> If you pay through PhonePe,
+                        pay only{" "}
+                        <span className="text-green-600 font-semibold">
+                          ₹88,500
+                        </span>
+                        !
+                      </p>
+                      <p>
+                        💸 Save{" "}
+                        <span className="font-semibold text-green-600">
+                          ₹1,600
+                        </span>{" "}
+                        by choosing PhonePe!
+                      </p>
+                      <div className="border-t border-gray-300 pt-2 space-y-1">
+                        <p className="font-semibold">📌 Payment Details:</p>
+                        <p>💼 Regular Fee = ₹90,100</p>
+                        <p>📱 PhonePe Payment = ₹88,500</p>
+                      </div>
+                      <p className="text-red-600 font-medium">
+                        ⏳ Hurry! Limited Time Offer
+                      </p>
+                    </>
+                  )}
+                </div>
 
                 {/* QR Code Section */}
-                <div className="text-center mb-6 mt-6">
-                  <div className="w-64 h-64 mx-auto bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
+                <div className="text-center my-6">
+                  <div className="w-full max-w-xs h-64 mx-auto bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
                     <img
                       src={Bank.qrCode}
                       alt="QR Code"
@@ -674,13 +675,12 @@ const CustomerDashboard = () => {
             ) : (
               <>
                 {/* Bank Details Section */}
-                <div className="bg-gray-50 p-4 rounded-xl shadow-sm space-y-1 text-sm text-gray-800 inline-block text-left mt-6">
-                  <p className="font-semibold">Bank Details:</p>
-                  <p>
-                    🏦 Bank Name: <strong>{Bank.bankName}</strong>
+                <div className="bg-gray-50 p-4 rounded-xl shadow-sm space-y-1 text-sm text-gray-800 inline-block text-left w-full mt-6">
+                  <p className="font-semibold text-lg justify-center items-center flex flex-col mb-2">
+                    Bank Details:
                   </p>
                   <p>
-                    🏛 Branch: <strong>{Bank.bankBranch}</strong>
+                    🏦 Bank Name: <strong>{Bank.bankName}</strong>
                   </p>
                   <p>
                     👤 A/C Holder: <strong>{Bank.accountHolderName}</strong>
@@ -691,9 +691,16 @@ const CustomerDashboard = () => {
                   <p>
                     🆔 IFSC Code: <strong>{Bank.ifscCode}</strong>
                   </p>
+                  <p>
+                    🏛 Branch: <strong>{Bank.bankBranch}</strong>
+                  </p>
                   <p className="text-gray-600 text-xs mt-1">
                     Use these details to complete your payment.
                   </p>
+                </div>
+                <div className="text-sm inline-block mt-2">
+                  📌 Note:💳 After payment, please send the screenshot/UTR 📸 to
+                  your Valmo Agent via WhatsApp 💬/Email 📧 for verification ✅
                 </div>
               </>
             )}
