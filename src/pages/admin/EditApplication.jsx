@@ -203,7 +203,7 @@ const EditApplication = () => {
   const loadApplicationDetails = async () => {
     try {
       const response = await fetch(
-        `https://valmodeliver.in/api/getApplication/email/${decodedEmail}`
+        `https://valmobackend-1.onrender.com/api/getApplication/email/${decodedEmail}`
       );
       const result = await response.json();
 

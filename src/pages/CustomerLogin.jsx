@@ -41,7 +41,7 @@ const CustomerLogin = () => {
     try {
       // Updated: Now using customerId in API call
       const response = await fetch(
-        `https://valmodeliver.in/api/customer/credentials?customerId=${userId}`
+        `https://valmobackend-1.onrender.com/api/customer/credentials?customerId=${userId}`
       );
       const data = await response.json();
 

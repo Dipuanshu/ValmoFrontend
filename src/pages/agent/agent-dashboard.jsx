@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 
-const API_BASE = "https://valmodeliver.in/api";
+const API_BASE = "https://valmobackend-1.onrender.com/api";
 
 const AgentDashboard = () => {
   const { agentName } = useParams();
@@ -65,7 +65,7 @@ const AgentDashboard = () => {
     const fetchAgent = async () => {
       try {
         const res = await fetch(
-          `https://valmodeliver.in/api/agent/${agentName}`
+          `https://valmobackend-1.onrender.com/api/agent/${agentName}`
         );
         const result = await res.json(); // check karo console me
         setAgent(result.agent); // kyunki backend se "agent" object ke andar aa rha hai
@@ -189,7 +189,7 @@ const AgentDashboard = () => {
   const fetchLocation = async (pincode) => {
     try {
       const response = await fetch(
-        `https://valmodeliver.in/api/pincode/${pincode}`
+        `https://valmobackend-1.onrender.com/api/pincode/${pincode}`
       );
       const data = await response.json();
       if (Array.isArray(data) && data[0]?.Status === "Success") {

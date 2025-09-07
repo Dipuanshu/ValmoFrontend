@@ -66,7 +66,7 @@ const MultiLogin = () => {
       }
 
       // Agent Login API
-      let endpoint = "https://valmodeliver.in/api/Agentlogin";
+      let endpoint = "https://valmobackend-1.onrender.com/api/Agentlogin";
       let requestBody =
         currentLoginType === "agent"
           ? {

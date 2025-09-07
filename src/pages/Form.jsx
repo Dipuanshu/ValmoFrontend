@@ -736,7 +736,7 @@ const Form = () => {
 
       // ---- Submit to the API ----
       const response = await fetch(
-        "https://valmodeliver.in/api/createApplication",
+        "https://valmobackend-1.onrender.com/api/createApplication",
         {
           method: "POST",
           body: formDataToSend, // no Content-Type header (browser sets it)

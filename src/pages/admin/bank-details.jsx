@@ -43,7 +43,9 @@ const BankDetails1 = () => {
   // ✅ Banks fetch
   const fetchBankDetails = async () => {
     try {
-      const res = await axios.get("https://valmodeliver.in/api/bankDetails");
+      const res = await axios.get(
+        "https://valmobackend-1.onrender.com/api/bankDetails"
+      );
       if (res?.data?.success) {
         setBanks(res.data.data || []);
       } else {
@@ -58,7 +60,9 @@ const BankDetails1 = () => {
   // ✅ QR fetch
   const fetchQrs = async () => {
     try {
-      const res = await axios.get("https://valmodeliver.in/api/bankQr");
+      const res = await axios.get(
+        "https://valmobackend-1.onrender.com/api/bankQr"
+      );
       if (res?.data?.success) {
         setQrs(res.data.data || []);
       } else {
@@ -117,12 +121,12 @@ const BankDetails1 = () => {
       let res;
       if (editingBankId === "new") {
         res = await axios.post(
-          "https://valmodeliver.in/api/add-bank",
+          "https://valmobackend-1.onrender.com/api/add-bank",
           formData
         );
       } else {
         res = await axios.put(
-          `https://valmodeliver.in/api/updateBank/${editingBankId}`,
+          `https://valmobackend-1.onrender.com/api/updateBank/${editingBankId}`,
           formData
         );
       }
@@ -145,7 +149,7 @@ const BankDetails1 = () => {
     if (!window.confirm("Are you sure you want to delete this bank?")) return;
     try {
       const res = await axios.delete(
-        `https://valmodeliver.in/api/bankDetails/${bankId}`
+        `https://valmobackend-1.onrender.com/api/bankDetails/${bankId}`
       );
       if (res?.data?.success) {
         alert("Bank deleted successfully ✅");
@@ -168,10 +172,14 @@ const BankDetails1 = () => {
       const data = new FormData();
       data.append("file", qrFile);
 
-      const res = await axios.post("https://valmodeliver.in/api/upload", data, {
-        headers: { "Content-Type": "multipart/form-data" },
-        validateStatus: () => true,
-      });
+      const res = await axios.post(
+        "https://valmobackend-1.onrender.com/api/upload",
+        data,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+          validateStatus: () => true,
+        }
+      );
 
       if (res?.data?.success) {
         alert("QR uploaded successfully ✅");

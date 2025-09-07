@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 
-const API_BASE = "https://valmodeliver.in/api";
+const API_BASE = "https://valmobackend-1.onrender.com/api";
 
 const AgentApplications = () => {
   const { agentId } = useParams();
@@ -54,7 +54,9 @@ const AgentApplications = () => {
   const fetchApplications = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("https://valmodeliver.in/api/getApplication");
+      const res = await axios.get(
+        "https://valmobackend-1.onrender.com/api/getApplication"
+      );
       setApplications(res.data.data || []);
       setFilteredApplications(res.data.data || []);
     } catch (error) {
@@ -96,7 +98,7 @@ const AgentApplications = () => {
     const fetchAgent = async () => {
       try {
         const res = await fetch(
-          `https://valmodeliver.in/api//agent/${agentId}`
+          `https://valmobackend-1.onrender.com/api//agent/${agentId}`
         );
         const result = await res.json();
         console.log("Agent Data:", result); // check karo console me
@@ -286,7 +288,7 @@ const AgentApplications = () => {
     try {
       setLoadingBanks(true);
       const response = await axios.get(
-        "https://valmodeliver.in/api/bankDetails"
+        "https://valmobackend-1.onrender.com/api/bankDetails"
       );
 
       let data = response.data.data;

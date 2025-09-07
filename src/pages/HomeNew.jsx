@@ -125,7 +125,7 @@ const HomeNew = () => {
               A trusted partner in <br /> simplifying logistics
             </h2>
             <button
-              onClick={() => navigate("/agent/agent-dashboard")}
+              onClick={() => navigate("/multi-login")}
               className="bg-[#0B2A4A] text-white px-6 py-2 rounded shadow hover:bg-blue-900 w-fit"
             >
               Join us Now
@@ -151,9 +151,10 @@ const HomeNew = () => {
             We are a trusted partner in simplifying logistics
           </h3>
           <p className="max-w-3xl">
-            Our aim is to streamline the logistics process - offering a smooth
-            and efficient delivery experience, all while delivering excellent
-            value by offering the lowest cost.
+            This website has been created for educational/demo purposes only. It
+            is a copy (clone) of valmo.in and has no affiliation or official
+            connection with Valmo Logistics Pvt. Ltd.. For original content,
+            services, and branding, please visit valmo.in .
           </p>
         </section>
 
@@ -225,7 +226,7 @@ const HomeNew = () => {
                 <li>Backed by Meesho – Trusted by 100 million+ customers</li>
               </ul>
               <button
-                onClick={() => navigate("/agent/agent-dashboard")}
+                onClick={() => navigate("/multi-login")}
                 className="bg-[#0B2A4A] text-white px-6 py-2 rounded mt-6 shadow hover:bg-blue-900"
               >
                 Join us Now
@@ -264,7 +265,7 @@ const HomeNew = () => {
                 </li>
               </ul>
               <button
-                onClick={() => navigate("/agent/agent-dashboard")}
+                onClick={() => navigate("/multi-login")}
                 className="bg-[#0B2A4A] text-white px-6 py-2 rounded mt-6 shadow hover:bg-blue-900"
               >
                 Join us Now
@@ -365,14 +366,14 @@ const HomeNew = () => {
           {/* Bottom Disclaimer */}
           <div className="max-w-7xl mx-auto mt-6 border-t border-gray-500 pt-4 text-xs text-gray-300">
             <p className="italic">
-              Disclaimer: Any official communication for business related
-              formalities will be sent by Valmo using our authorised official
-              email addresses (@valmodeliver.in or @meesho.com). Kindly DO NOT
-              interact with any communications or requests for payments from any
-              other sources or share any personal information.
+              Disclaimer: This website has been created for educational/demo
+              purposes only. It is a copy (clone) of valmo.in and has no
+              affiliation or official connection with Valmo Logistics Pvt. Ltd..
+              For original content, services, and branding, please visit
+              valmo.in .
             </p>
             <p className="mt-4">
-              &copy; Copyright © 2024. All rights reserved.
+              &copy; Copyright ©Valmo.in 2024. All rights reserved.
             </p>
           </div>
         </footer>
