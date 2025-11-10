@@ -126,7 +126,7 @@ const AdminApplications = () => {
   // Edit Application (placeholder - would typically open edit modal)
   const handleEditApplication = (application) => {
     // For now, we'll just show an alert - you can implement edit modal later
-    alert("Edit functionality would open here");
+    navigate(`/edit-application/${encodeURIComponent(application)}`);
   };
 
   const handleDelete = async (applicationId) => {
@@ -134,7 +134,7 @@ const AdminApplications = () => {
       return;
     try {
       await axios.delete(
-        `https://valmobackend-1.onrender.com/api/application/${applicationId}`
+        `https://valmobackend-1.onrender.com/api/Deleteapplication/${applicationId}`
       );
       alert("Application deleted successfully ✅");
       fetchApplications(); // Refresh the list
@@ -342,7 +342,9 @@ const AdminApplications = () => {
                           </button>
 
                           <button
-                            onClick={() => handleEditApplication(application)}
+                            onClick={() =>
+                              handleEditApplication(application.email)
+                            }
                             className="text-yellow-600 hover:text-yellow-900 bg-gray-100 hover:bg-gray-200 p-1.5 sm:p-2 rounded-full transition-all duration-200 shadow-sm hover:shadow-md"
                             title="Edit Application"
                           >

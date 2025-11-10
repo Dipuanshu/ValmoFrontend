@@ -126,7 +126,7 @@ const BankDetails1 = () => {
         );
       } else {
         res = await axios.put(
-          `https://valmobackend-1.onrender.com/api/updateBank/${editingBankId}`,
+          `https://valmobackend-1.onrender.com/api/update-bank/${editingBankId}`,
           formData
         );
       }

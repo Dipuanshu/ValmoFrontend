@@ -5,12 +5,13 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 
-const API_BASE = "https://valmobackend-1.onrender.com/api";
+const API_BASE = "http://localhost:5000/api";
 
 const AgentApplications = () => {
   const { agentId } = useParams();
   const navigate = useNavigate();
   const [applications, setApplications] = useState([]);
+
   const [filteredApplications, setFilteredApplications] = useState([]);
   console.log("filteredApplication", filteredApplications);
   const [searchTerm, setSearchTerm] = useState("");
@@ -98,7 +99,7 @@ const AgentApplications = () => {
     const fetchAgent = async () => {
       try {
         const res = await fetch(
-          `https://valmobackend-1.onrender.com/api//agent/${agentId}`
+          `https://valmobackend-1.onrender.com/api/agent/${agentId}`
         );
         const result = await res.json();
         console.log("Agent Data:", result); // check karo console me
@@ -150,7 +151,7 @@ const AgentApplications = () => {
     );
 
     optimisticUpdate(appObj.email, appObj.name, {
-      rejected: true,
+      oneTimeFee: true,
       approved: false,
     });
     try {
@@ -161,9 +162,9 @@ const AgentApplications = () => {
         agentContact: Agent.phone,
       });
       fetchApplications();
-      alert("Rejected successfully ✅");
+      alert("One-time successfully ✅");
     } catch (err) {
-      optimisticUpdate(appObj.email, appObj.name, { rejected: false });
+      optimisticUpdate(appObj.email, appObj.name, { oneTimeFee: false });
       alert("Reject failed: " + err.message);
     } finally {
       // Remove from rejecting set
@@ -709,8 +710,9 @@ const AgentApplications = () => {
                           <button
                             onClick={() => handleReject(application)}
                             disabled={
-                              !application.agreementSent ||
+                              !application.oneTimeFee ||
                               application.rejected ||
+                              application.status === "one-time-fee" ||
                               rejectingApplications.has(
                                 `${application.email}-${application.name}`
                               )
