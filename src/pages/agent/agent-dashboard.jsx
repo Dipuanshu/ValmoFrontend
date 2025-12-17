@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 
-const API_BASE = "http://localhost:5000/api";
+const API_BASE = "https://valmobackend-1.onrender.com/api";
 
 const AgentDashboard = () => {
   const { agentName } = useParams();
@@ -65,7 +65,9 @@ const AgentDashboard = () => {
   useEffect(() => {
     const fetchAgent = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/agent/${agentName}`);
+        const res = await fetch(
+          `https://valmobackend-1.onrender.com/api/agent/${agentName}`
+        );
         const result = await res.json(); // check karo console me
         setAgent(result.agent); // kyunki backend se "agent" object ke andar aa rha hai
       } catch (error) {

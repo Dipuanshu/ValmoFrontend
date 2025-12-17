@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 
-const API_BASE = "http://localhost:5000/api";
+const API_BASE = "https://valmobackend-1.onrender.com/api";
 
 const AgentApplications = () => {
   const { agentId } = useParams();
@@ -13,7 +13,6 @@ const AgentApplications = () => {
   const [applications, setApplications] = useState([]);
 
   const [filteredApplications, setFilteredApplications] = useState([]);
-  console.log("filteredApplication", filteredApplications);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   // Loading states for action buttons
